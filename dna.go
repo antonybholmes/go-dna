@@ -99,22 +99,42 @@ func ParseLocation(location string) (*Location, error) {
 	return &Location{Chr: chr, Start: start, End: end}, nil
 }
 
-// Reverse complement a dna byte sequence in situ.
-func RevComp(dna []byte) {
+func Rev(dna []byte) {
 	l := len(dna)
 	lastIndex := l - 1
-	n := l / 2
 
-	// reverse the byte order and complement each base
-	for i := 0; i < n; i++ {
-		i2 := lastIndex - i
-		b := DNA_COMPLEMENT_MAP[dna[i]]
-		dna[i] = DNA_COMPLEMENT_MAP[dna[i2]]
-		dna[i2] = b
+	for i := 0; i < l/2; i++ {
+		j := lastIndex - i
+		dna[i], dna[j] = dna[j], dna[i]
 	}
 }
 
-func GetDNA(dir string, location *Location, revComp bool) (string, error) {
+func Comp(dna []byte) {
+
+	for i, v := range dna {
+		dna[i] = DNA_COMPLEMENT_MAP[v]
+	}
+}
+
+// Reverse complement a dna byte sequence in situ.
+func RevComp(dna []byte) {
+	Rev(dna)
+	Comp(dna)
+
+	// l := len(dna)
+	// lastIndex := l - 1
+	// n := l / 2
+
+	// // reverse the byte order and complement each base
+	// for i := 0; i < n; i++ {
+	// 	i2 := lastIndex - i
+	// 	b := DNA_COMPLEMENT_MAP[dna[i]]
+	// 	dna[i] = DNA_COMPLEMENT_MAP[dna[i2]]
+	// 	dna[i2] = b
+	// }
+}
+
+func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -174,8 +194,12 @@ func GetDNA(dir string, location *Location, revComp bool) (string, error) {
 		s++
 	}
 
-	if revComp {
-		RevComp(dna)
+	if rev {
+		Rev(dna)
+	}
+
+	if comp {
+		Comp(dna)
 	}
 
 	return string(dna), nil
