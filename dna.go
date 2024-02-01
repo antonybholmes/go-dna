@@ -69,13 +69,6 @@ type Location struct {
 	End   int    `json:"end"`
 }
 
-type DNA struct {
-	Location string `json:"location"`
-	DNA      string `json:"dna"`
-}
-
-var ERROR_DNA = DNA{Location: "", DNA: ""}
-
 func (location Location) String() string {
 	return fmt.Sprintf("%s:%d-%d", location.Chr, location.Start, location.End)
 }
@@ -121,7 +114,7 @@ func RevComp(dna []byte) {
 	}
 }
 
-func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
+func GetDNA(dir string, location *Location, revComp bool) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -133,12 +126,12 @@ func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
 
 	file := filepath.Join(dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
 
-	fmt.Printf("%s\n", file)
+	fmt.Printf("%s cake\n", file)
 
 	f, err := os.Open(file)
 
 	if err != nil {
-		return &DNA{Location: location.String(), DNA: ""}, err
+		return "", err
 	}
 
 	f.Seek(int64(1+bs), 0)
@@ -148,7 +141,7 @@ func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
 	f.Close()
 
 	if err != nil {
-		return &DNA{Location: location.String(), DNA: ""}, err
+		return "", err
 	}
 
 	dna := make([]byte, l)
@@ -185,5 +178,5 @@ func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
 		RevComp(dna)
 	}
 
-	return &DNA{Location: location.String(), DNA: string(dna)}, nil
+	return string(dna), nil
 }
