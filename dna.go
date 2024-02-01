@@ -70,8 +70,14 @@ type Location struct {
 }
 
 type DNA struct {
-	Location *Location `json:"location"`
-	DNA      string    `json:"dna"`
+	Location string `json:"location"`
+	DNA      string `json:"dna"`
+}
+
+var ERROR_DNA = DNA{Location: "", DNA: ""}
+
+func (location Location) String() string {
+	return fmt.Sprintf("%s:%d-%d", location.Chr, location.Start, location.End)
 }
 
 func ParseLocation(location string) (*Location, error) {
@@ -132,7 +138,7 @@ func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
 	f, err := os.Open(file)
 
 	if err != nil {
-		return nil, err
+		return &DNA{Location: location.String(), DNA: ""}, err
 	}
 
 	f.Seek(int64(1+bs), 0)
@@ -142,7 +148,7 @@ func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
 	f.Close()
 
 	if err != nil {
-		return nil, err
+		return &DNA{Location: location.String(), DNA: ""}, err
 	}
 
 	dna := make([]byte, l)
@@ -179,5 +185,5 @@ func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
 		RevComp(dna)
 	}
 
-	return &DNA{Location: location, DNA: string(dna)}, nil
+	return &DNA{Location: location.String(), DNA: string(dna)}, nil
 }
