@@ -9,20 +9,47 @@ import (
 	"strings"
 )
 
-var DNA_4BIT_DECODE_DICT = map[byte]byte{
-	1:  65,
-	2:  67,
-	3:  71,
-	4:  84,
-	5:  97,
-	6:  99,
-	7:  103,
-	8:  116,
-	9:  78,
-	10: 110,
+// var DNA_4BIT_DECODE_MAP = map[byte]byte{
+// 	1:  65,
+// 	2:  67,
+// 	3:  71,
+// 	4:  84,
+// 	5:  97,
+// 	6:  99,
+// 	7:  103,
+// 	8:  116,
+// 	9:  78,
+// 	10: 110,
+// }
+
+// use an array for speed since
+// we only have 16 values and we
+// know explicitly what each value
+// maps to
+var DNA_4BIT_DECODE_MAP = [16]byte{
+	0,
+	65,
+	67,
+	71,
+	84,
+	97,
+	99,
+	103,
+	116,
+	78,
+	110,
+	0,
+	0,
+	0,
+	0,
+	0,
 }
 
-var DNA_4BIT_COMP_DICT = map[byte]byte{
+// This is simple complementary lookup
+// map for DNA bases represented as
+// ASCII code bytes, e.g. 65 = 'A' maps
+// to 84 = 'T'
+var DNA_COMPLEMENT_MAP = map[byte]byte{
 	0:   0,
 	65:  84,
 	67:  71,
@@ -73,21 +100,22 @@ func ParseLocation(location string) (*Location, error) {
 	return &Location{Chr: chr, Start: start, End: end}, nil
 }
 
+// Reverse complement a dna byte sequence in situ.
 func RevComp(dna []byte) {
+	l := len(dna)
+	lastIndex := l - 1
+	n := l / 2
 
-	i2 := len(dna) - 1
-
-	l := int(len(dna) / 2)
-
-	for i := 0; i < l; i++ {
-		b := DNA_4BIT_COMP_DICT[dna[i]]
-		dna[i] = DNA_4BIT_COMP_DICT[dna[i2]]
+	// reverse the byte order and complement each base
+	for i := 0; i < n; i++ {
+		i2 := lastIndex - i
+		b := DNA_COMPLEMENT_MAP[dna[i]]
+		dna[i] = DNA_COMPLEMENT_MAP[dna[i2]]
 		dna[i2] = b
-		i2 -= 1
 	}
 }
 
-func GetDNA(dir string, location *Location) (*DNA, error) {
+func GetDNA(dir string, location *Location, revComp bool) (*DNA, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -107,8 +135,6 @@ func GetDNA(dir string, location *Location) (*DNA, error) {
 		return nil, err
 	}
 
-	fmt.Printf("seek %d\n", 1+bs)
-
 	f.Seek(int64(1+bs), 0)
 
 	_, err = f.Read(d)
@@ -119,28 +145,39 @@ func GetDNA(dir string, location *Location) (*DNA, error) {
 		return nil, err
 	}
 
-	ret := make([]byte, l)
+	dna := make([]byte, l)
 
-	bi := 0
+	// which byte we are scanning (each byte contains 2 bases)
+	byteIndex := 0
 	var v byte
 
 	for i := 0; i < l; i++ {
-		block := s % 2
+		// Which base we want in the byte
+		// If the start position s is even, we want the first
+		// 4 bits of the byte, else the lower 4 bits.
+		baseIndex := s % 2
 
-		v = d[bi]
+		v = d[byteIndex]
 
-		if block == 0 {
+		if baseIndex == 0 {
 			v = v >> 4
+		} else {
+			// if we are on the second base of the byte, on the
+			// next loop we must proceed to the next byte to get
+			// the base
+			byteIndex++
 		}
 
-		ret[i] = DNA_4BIT_DECODE_DICT[v&15]
-
-		if block == 1 {
-			bi++
-		}
+		// mask for lower 4 bits since these
+		// contain the dna base code
+		dna[i] = DNA_4BIT_DECODE_MAP[v&15]
 
 		s++
 	}
 
-	return &DNA{Location: location, DNA: string(ret)}, nil
+	if revComp {
+		RevComp(dna)
+	}
+
+	return &DNA{Location: location, DNA: string(dna)}, nil
 }
