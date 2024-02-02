@@ -146,8 +146,6 @@ func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error)
 
 	file := filepath.Join(dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
 
-	fmt.Printf("%s cake\n", file)
-
 	f, err := os.Open(file)
 
 	if err != nil {
