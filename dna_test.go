@@ -13,7 +13,7 @@ func TestWithin(t *testing.T) {
 		t.Fatalf(`err %s`, err)
 	}
 
-	dna, err := GetDNA("/ifs/scratch/cancer/Lab_RDF/ngs/dna/hg19", location, false)
+	dna, err := GetDNA("/ifs/scratch/cancer/Lab_RDF/ngs/dna/hg19", location, false, false)
 
 	if err != nil {
 		t.Fatalf(`err %s`, err)

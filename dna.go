@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/antonybholmes/go-utils"
 )
 
 // var DNA_4BIT_DECODE_MAP = map[byte]byte{
@@ -63,13 +65,53 @@ var DNA_COMPLEMENT_MAP = map[byte]byte{
 	110: 10,
 }
 
+type TSSRegion struct {
+	offset5p int
+	offset3p int
+}
+
+func NewTSSRegion(offset5p int, offset3p int) *TSSRegion {
+	return &TSSRegion{
+		offset5p: utils.AbsInt(offset5p),
+		offset3p: utils.AbsInt(offset3p),
+	}
+}
+
+func (t *TSSRegion) Offset5P() int {
+	return t.offset5p
+}
+
+func (t *TSSRegion) Offset3P() int {
+	return t.offset3p
+}
+
 type Location struct {
 	Chr   string `json:"chr"`
 	Start int    `json:"start"`
 	End   int    `json:"end"`
 }
 
-func (location Location) String() string {
+func NewLocation(chr string, start int, end int) (*Location, error) {
+	chr = strings.ToLower(chr)
+
+	if !strings.Contains(chr, "chr") {
+		return nil, fmt.Errorf("chr %s is invalid", chr)
+	}
+
+	s := utils.IntMax(1, utils.IntMin(start, end))
+
+	return &Location{
+		Chr:   chr,
+		Start: s,
+		End:   utils.IntMax(s, end),
+	}, nil
+}
+
+func (location *Location) Mid() int {
+	return (location.Start + location.End) / 2
+}
+
+func (location *Location) String() string {
 	return fmt.Sprintf("%s:%d-%d", location.Chr, location.Start, location.End)
 }
 
