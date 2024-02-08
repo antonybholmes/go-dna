@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -63,42 +61,6 @@ var DNA_COMPLEMENT_MAP = map[byte]byte{
 	110: 10,
 }
 
-type Location struct {
-	Chr   string `json:"chr"`
-	Start int    `json:"start"`
-	End   int    `json:"end"`
-}
-
-func (location Location) String() string {
-	return fmt.Sprintf("%s:%d-%d", location.Chr, location.Start, location.End)
-}
-
-func ParseLocation(location string) (*Location, error) {
-	matched, err := regexp.MatchString(`^chr([0-9]+|[xyXY]):\d+-\d+$`, location)
-
-	if !matched || err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid location", location)
-	}
-
-	tokens := strings.Split(location, ":")
-	chr := tokens[0]
-	tokens = strings.Split(tokens[1], "-")
-
-	start, err := strconv.Atoi(tokens[0])
-
-	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid start", tokens[0])
-	}
-
-	end, err := strconv.Atoi(tokens[1])
-
-	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid end", tokens[1])
-	}
-
-	return &Location{Chr: chr, Start: start, End: end}, nil
-}
-
 func Rev(dna []byte) {
 	l := len(dna)
 	lastIndex := l - 1
@@ -134,7 +96,15 @@ func RevComp(dna []byte) {
 	// }
 }
 
-func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error) {
+type DNADB struct {
+	dir string
+}
+
+func NewDNADB(dir string) *DNADB {
+	return &DNADB{dir}
+}
+
+func (dnadb *DNADB) GetDNA(location *Location, rev bool, comp bool) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -144,7 +114,7 @@ func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error)
 
 	d := make([]byte, bl)
 
-	file := filepath.Join(dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
+	file := filepath.Join(dnadb.dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
 
 	f, err := os.Open(file)
 
@@ -168,7 +138,7 @@ func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error)
 	byteIndex := 0
 	var v byte
 
-	for i := 0; i < l; i++ {
+	for i := uint(0); i < l; i++ {
 		// Which base we want in the byte
 		// If the start position s is even, we want the first
 		// 4 bits of the byte, else the lower 4 bits.
