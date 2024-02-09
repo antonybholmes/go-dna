@@ -90,6 +90,7 @@ func CompBase(b byte) byte {
 	}
 }
 
+// Returns true if byte is a lowercase ascii letter
 func IsLower(b byte) bool {
 	switch b {
 	case 97, 99, 103, 116, 110:
@@ -99,6 +100,9 @@ func IsLower(b byte) bool {
 	}
 }
 
+// Converts a byte to an uppercase letter, note that
+// this is a restrictive alphabet of A,C,G,T,N so
+// it is designed only for DNA sequences.
 func toUpper(b byte) byte {
 	switch b {
 	case 65, 97:
@@ -116,6 +120,7 @@ func toUpper(b byte) byte {
 	}
 }
 
+// Converts a byte to a lowercase letter
 func toLower(b byte) byte {
 	switch b {
 	case 65, 97:
@@ -133,6 +138,7 @@ func toLower(b byte) byte {
 	}
 }
 
+// Reverses a byte array
 func Rev(dna []byte) {
 	l := len(dna)
 	lastIndex := l - 1
@@ -143,8 +149,8 @@ func Rev(dna []byte) {
 	}
 }
 
+// Compliments a DNA sequence represented as an ascii byte array.
 func Comp(dna []byte) {
-
 	for i, b := range dna {
 		dna[i] = CompBase(b)
 	}
@@ -168,8 +174,14 @@ func RevComp(dna []byte) {
 	// }
 }
 
+// Determines how repetative sequences are shown. Can
+// be either "", "lower", or "n". If "" formatting is
+// ignored allowing change case to modify lowercase to
+// uppercase. If "lower" lowercase bases are preserved
+// even if change of case specified. If "n" lowercase
+// bases are converted to N
 func changeRepeatMask(dna []byte, repeatMask string) {
-	if repeatMask == "n" {
+	if strings.ToLower(repeatMask) == "n" {
 		for i, b := range dna {
 			if IsLower(b) {
 				dna[i] = BASE_N
@@ -179,12 +191,17 @@ func changeRepeatMask(dna []byte, repeatMask string) {
 	}
 }
 
+// Determines how sequences are displayed. Can
+// be either "", "lower", or "upper". If "", formatting is
+// ignored. If "lower" lowercase bases are converted to lowercase.
+// If "upper" bases are converted to uppercase. Repeat mask rules
+// overrule case changes.
 func changeCase(dna []byte, format string, repeatMask string) {
 	if format == "" || repeatMask != "" {
 		return
 	}
 
-	if format == "upper" {
+	if strings.Contains(strings.ToLower(format), "u") {
 		for i, b := range dna {
 			dna[i] = toUpper(b)
 		}
@@ -205,8 +222,10 @@ func NewDNADbCache(dir string) *DNADbCache {
 	return &DNADbCache{dir: dir, cache: make(map[string]*DNADb)}
 }
 
-func (dnadbcache *DNADbCache) Db(assembly string) (*DNADb, error) {
-	_, ok := dnadbcache.cache[assembly]
+func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask string) (*DNADb, error) {
+	key := fmt.Sprintf("%s:%s:%s", assembly, format, repeatMask)
+
+	_, ok := dnadbcache.cache[key]
 
 	if !ok {
 
@@ -218,24 +237,26 @@ func (dnadbcache *DNADbCache) Db(assembly string) (*DNADb, error) {
 			return nil, fmt.Errorf("%s is not a valid assembly", assembly)
 		}
 
-		db := NewDNADb(filepath.Join(dnadbcache.dir, assembly))
+		db := NewDNADb(filepath.Join(dnadbcache.dir, assembly), format, repeatMask)
 
-		dnadbcache.cache[assembly] = db
+		dnadbcache.cache[key] = db
 	}
 
-	return dnadbcache.cache[assembly], nil
+	return dnadbcache.cache[key], nil
 }
 
 type DNADb struct {
-	dir string
+	dir        string
+	format     string
+	repeatMask string
 }
 
-func NewDNADb(dir string) *DNADb {
-	return &DNADb{dir}
+func NewDNADb(dir string, format string,
+	repeatMask string) *DNADb {
+	return &DNADb{dir, format, repeatMask}
 }
 
-func (dnadb *DNADb) DNA(location *Location, rev bool, comp bool, format string,
-	repeatMask string) (string, error) {
+func (dnadb *DNADb) DNA(location *Location, rev bool, comp bool) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -301,9 +322,9 @@ func (dnadb *DNADb) DNA(location *Location, rev bool, comp bool, format string,
 		Comp(dna)
 	}
 
-	changeRepeatMask(dna, repeatMask)
+	changeRepeatMask(dna, dnadb.repeatMask)
 
-	changeCase(dna, format, repeatMask)
+	changeCase(dna, dnadb.format, dnadb.repeatMask)
 
 	return string(dna), nil
 }
