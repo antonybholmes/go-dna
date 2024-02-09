@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/antonybholmes/go-utils"
@@ -65,6 +63,7 @@ var DNA_COMPLEMENT_MAP = map[byte]byte{
 	110: 10,
 }
 
+<<<<<<< HEAD
 type TSSRegion struct {
 	offset5p int
 	offset3p int
@@ -141,6 +140,8 @@ func ParseLocation(location string) (*Location, error) {
 	return &Location{Chr: chr, Start: start, End: end}, nil
 }
 
+=======
+>>>>>>> dev
 func Rev(dna []byte) {
 	l := len(dna)
 	lastIndex := l - 1
@@ -176,7 +177,15 @@ func RevComp(dna []byte) {
 	// }
 }
 
-func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error) {
+type DNADB struct {
+	dir string
+}
+
+func NewDNADB(dir string) *DNADB {
+	return &DNADB{dir}
+}
+
+func (dnadb *DNADB) GetDNA(location *Location, rev bool, comp bool) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -186,7 +195,7 @@ func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error)
 
 	d := make([]byte, bl)
 
-	file := filepath.Join(dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
+	file := filepath.Join(dnadb.dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
 
 	f, err := os.Open(file)
 
@@ -210,7 +219,7 @@ func GetDNA(dir string, location *Location, rev bool, comp bool) (string, error)
 	byteIndex := 0
 	var v byte
 
-	for i := 0; i < l; i++ {
+	for i := uint(0); i < l; i++ {
 		// Which base we want in the byte
 		// If the start position s is even, we want the first
 		// 4 bits of the byte, else the lower 4 bits.
