@@ -43,22 +43,94 @@ var DNA_4BIT_DECODE_MAP = [16]byte{
 	0,
 }
 
+const BASE_N byte = 78
+
 // This is simple complementary lookup
 // map for DNA bases represented as
 // ASCII code bytes, e.g. 65 = 'A' maps
 // to 84 = 'T'
-var DNA_COMPLEMENT_MAP = map[byte]byte{
-	0:   0,
-	65:  84,
-	67:  71,
-	71:  67,
-	84:  65,
-	97:  116,
-	99:  103,
-	103: 99,
-	116: 97,
-	78:  78,
-	110: 10,
+// var DNA_COMPLEMENT_MAP = map[byte]byte{
+// 	0:   0,
+// 	65:  84,
+// 	67:  71,
+// 	71:  67,
+// 	84:  65,
+// 	97:  116,
+// 	99:  103,
+// 	103: 99,
+// 	116: 97,
+// 	78:  78,
+// 	110: 10,
+// }
+
+func CompBase(b byte) byte {
+	switch b {
+	case 65:
+		return 84
+	case 67:
+		return 71
+	case 71:
+		return 67
+	case 84:
+		return 65
+	case 97:
+		return 116
+	case 99:
+		return 103
+	case 103:
+		return 99
+	case 116:
+		return 97
+	case 78:
+		return 78
+	case 110:
+		return 10
+	default:
+		return 0
+	}
+}
+
+func IsLower(b byte) bool {
+	switch b {
+	case 97, 99, 103, 116, 110:
+		return true
+	default:
+		return false
+	}
+}
+
+func toUpper(b byte) byte {
+	switch b {
+	case 65, 97:
+		return 65
+	case 67, 99:
+		return 67
+	case 71, 103:
+		return 71
+	case 84, 116:
+		return 84
+	case BASE_N, 110:
+		return BASE_N
+	default:
+		return 0
+	}
+}
+
+func toLower(b byte) byte {
+	switch b {
+	case 65, 97:
+		return 97
+	case 67, 99:
+		return 99
+	case 71, 103:
+		return 103
+	case 84, 116:
+		return 116
+	case BASE_N, 110:
+		return 110
+	default:
+		return 0
+	}
 }
 
 func Rev(dna []byte) {
@@ -73,8 +145,8 @@ func Rev(dna []byte) {
 
 func Comp(dna []byte) {
 
-	for i, v := range dna {
-		dna[i] = DNA_COMPLEMENT_MAP[v]
+	for i, b := range dna {
+		dna[i] = CompBase(b)
 	}
 }
 
@@ -96,15 +168,74 @@ func RevComp(dna []byte) {
 	// }
 }
 
-type DNADB struct {
+func changeRepeatMask(dna []byte, repeatMask string) {
+	if repeatMask == "n" {
+		for i, b := range dna {
+			if IsLower(b) {
+				dna[i] = BASE_N
+			}
+		}
+
+	}
+}
+
+func changeCase(dna []byte, format string, repeatMask string) {
+	if format == "" || repeatMask != "" {
+		return
+	}
+
+	if format == "upper" {
+		for i, b := range dna {
+			dna[i] = toUpper(b)
+		}
+	} else {
+		for i, b := range dna {
+			dna[i] = toLower(b)
+		}
+	}
+
+}
+
+type DNADbCache struct {
+	dir   string
+	cache map[string]*DNADb
+}
+
+func NewDNADbCache(dir string) *DNADbCache {
+	return &DNADbCache{dir: dir, cache: make(map[string]*DNADb)}
+}
+
+func (dnadbcache *DNADbCache) Db(assembly string) (*DNADb, error) {
+	_, ok := dnadbcache.cache[assembly]
+
+	if !ok {
+
+		dir := filepath.Join(dnadbcache.dir, assembly)
+
+		_, err := os.Stat(dir)
+
+		if err != nil {
+			return nil, fmt.Errorf("%s is not a valid assembly", assembly)
+		}
+
+		db := NewDNADb(filepath.Join(dnadbcache.dir, assembly))
+
+		dnadbcache.cache[assembly] = db
+	}
+
+	return dnadbcache.cache[assembly], nil
+}
+
+type DNADb struct {
 	dir string
 }
 
-func NewDNADB(dir string) *DNADB {
-	return &DNADB{dir}
+func NewDNADb(dir string) *DNADb {
+	return &DNADb{dir}
 }
 
-func (dnadb *DNADB) GetDNA(location *Location, rev bool, comp bool) (string, error) {
+func (dnadb *DNADb) DNA(location *Location, rev bool, comp bool, format string,
+	repeatMask string) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -169,6 +300,10 @@ func (dnadb *DNADB) GetDNA(location *Location, rev bool, comp bool) (string, err
 	if comp {
 		Comp(dna)
 	}
+
+	changeRepeatMask(dna, repeatMask)
+
+	changeCase(dna, format, repeatMask)
 
 	return string(dna), nil
 }
