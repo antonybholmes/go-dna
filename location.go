@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/antonybholmes/go-utils"
+	"github.com/antonybholmes/go-math"
 )
 
 type TSSRegion struct {
@@ -39,9 +39,9 @@ func NewLocation(chr string, start uint, end uint) *Location {
 		chr = fmt.Sprintf("chr%s", chr)
 	}
 
-	s := utils.UintMax(1, utils.UintMin(start, end))
+	s := math.UintMax(1, math.UintMin(start, end))
 
-	return &Location{Chr: chr, Start: s, End: utils.UintMax(s, end)}
+	return &Location{Chr: chr, Start: s, End: math.UintMax(s, end)}
 }
 
 func (location *Location) String() string {
