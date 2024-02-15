@@ -222,9 +222,8 @@ func NewDNADbCache() *DNADbCache {
 	return &DNADbCache{dir: ".", cache: make(map[string]*DNADb)}
 }
 
-func (dnadbcache *DNADbCache) Dir(dir string) *DNADbCache {
+func (dnadbcache *DNADbCache) Dir(dir string) {
 	dnadbcache.dir = dir
-	return dnadbcache
 }
 
 func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask string) (*DNADb, error) {
