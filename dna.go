@@ -219,11 +219,15 @@ type DNADbCache struct {
 }
 
 func NewDNADbCache() *DNADbCache {
-	return &DNADbCache{dir: ".", cache: make(map[string]*DNADb)}
+	return &DNADbCache{dir: "data/dna", cache: make(map[string]*DNADb)}
 }
 
-func (dnadbcache *DNADbCache) Dir(dir string) {
+func (dnadbcache *DNADbCache) SetDir(dir string) {
 	dnadbcache.dir = dir
+}
+
+func (dnadbcache *DNADbCache) Dir() string {
+	return dnadbcache.dir
 }
 
 func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask string) (*DNADb, error) {
