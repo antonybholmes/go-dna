@@ -215,15 +215,16 @@ func changeCase(dna []byte, format string, repeatMask string) {
 
 type DNADbCache struct {
 	dir   string
-	cache map[string]*DNADb
+	cache *map[string]*DNADb
 }
 
 func NewDNADbCache() *DNADbCache {
-	return &DNADbCache{dir: "data/dna", cache: make(map[string]*DNADb)}
+	return &DNADbCache{dir: "", cache: nil}
 }
 
-func (dnadbcache *DNADbCache) SetDir(dir string) {
+func (dnadbcache *DNADbCache) Init(dir string) {
 	dnadbcache.dir = dir
+	dnadbcache.cache = new(map[string]*DNADb)
 }
 
 func (dnadbcache *DNADbCache) Dir() string {
@@ -233,7 +234,7 @@ func (dnadbcache *DNADbCache) Dir() string {
 func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask string) (*DNADb, error) {
 	key := fmt.Sprintf("%s:%s:%s", assembly, format, repeatMask)
 
-	_, ok := dnadbcache.cache[key]
+	_, ok := (*dnadbcache.cache)[key]
 
 	if !ok {
 
@@ -247,10 +248,10 @@ func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask stri
 
 		db := NewDNADb(filepath.Join(dnadbcache.dir, assembly), format, repeatMask)
 
-		dnadbcache.cache[key] = db
+		(*dnadbcache.cache)[key] = db
 	}
 
-	return dnadbcache.cache[key], nil
+	return (*dnadbcache.cache)[key], nil
 }
 
 type DNADb struct {

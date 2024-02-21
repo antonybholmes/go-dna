@@ -4,8 +4,8 @@ import "github.com/antonybholmes/go-dna"
 
 var cache = dna.NewDNADbCache()
 
-func SetDir(dir string) {
-	cache.SetDir(dir)
+func Init(dir string) {
+	cache.Init(dir)
 }
 
 func Dir() string {
