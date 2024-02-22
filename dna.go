@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 // var DNA_4BIT_DECODE_MAP = map[byte]byte{
@@ -214,31 +216,31 @@ func changeCase(dna []byte, format string, repeatMask string) {
 }
 
 type DNADbCache struct {
-	dir   string
-	cache *map[string]*DNADb
+	Dir   string
+	Cache map[string]*DNADb
 }
 
 func NewDNADbCache() *DNADbCache {
-	return &DNADbCache{dir: "", cache: nil}
+	return &DNADbCache{Dir: "", Cache: map[string]*DNADb{}}
 }
 
 func (dnadbcache *DNADbCache) Init(dir string) {
-	dnadbcache.dir = dir
-	dnadbcache.cache = new(map[string]*DNADb)
-}
+	log.Debug().Msgf("init dnadbcache: %s", dir)
 
-func (dnadbcache *DNADbCache) Dir() string {
-	return dnadbcache.dir
+	dnadbcache.Dir = dir
+	//dnadbcache.Cache = new(map[string]*DNADb)
 }
 
 func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask string) (*DNADb, error) {
 	key := fmt.Sprintf("%s:%s:%s", assembly, format, repeatMask)
 
-	_, ok := (*dnadbcache.cache)[key]
+	//log.Debug().Msgf("key %s", key)
+
+	_, ok := dnadbcache.Cache[key]
 
 	if !ok {
 
-		dir := filepath.Join(dnadbcache.dir, assembly)
+		dir := filepath.Join(dnadbcache.Dir, assembly)
 
 		_, err := os.Stat(dir)
 
@@ -246,18 +248,18 @@ func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask stri
 			return nil, fmt.Errorf("%s is not a valid assembly", assembly)
 		}
 
-		db := NewDNADb(filepath.Join(dnadbcache.dir, assembly), format, repeatMask)
+		db := NewDNADb(dir, format, repeatMask)
 
-		(*dnadbcache.cache)[key] = db
+		dnadbcache.Cache[key] = db
 	}
 
-	return (*dnadbcache.cache)[key], nil
+	return dnadbcache.Cache[key], nil
 }
 
 type DNADb struct {
-	dir        string
-	format     string
-	repeatMask string
+	Dir        string
+	Format     string
+	RepeatMask string
 }
 
 func NewDNADb(dir string, format string,
@@ -275,7 +277,7 @@ func (dnadb *DNADb) DNA(location *Location, rev bool, comp bool) (string, error)
 
 	d := make([]byte, bl)
 
-	file := filepath.Join(dnadb.dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
+	file := filepath.Join(dnadb.Dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
 
 	f, err := os.Open(file)
 
@@ -331,9 +333,9 @@ func (dnadb *DNADb) DNA(location *Location, rev bool, comp bool) (string, error)
 		Comp(dna)
 	}
 
-	changeRepeatMask(dna, dnadb.repeatMask)
+	changeRepeatMask(dna, dnadb.RepeatMask)
 
-	changeCase(dna, dnadb.format, dnadb.repeatMask)
+	changeCase(dna, dnadb.Format, dnadb.RepeatMask)
 
 	return string(dna), nil
 }

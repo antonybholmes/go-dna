@@ -9,7 +9,7 @@ func Init(dir string) {
 }
 
 func Dir() string {
-	return cache.Dir()
+	return cache.Dir
 }
 
 func Db(assembly string, format string, repeatMask string) (*dna.DNADb, error) {
