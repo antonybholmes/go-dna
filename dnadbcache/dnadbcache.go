@@ -2,10 +2,11 @@ package dnadbcache
 
 import "github.com/antonybholmes/go-dna"
 
-var cache = dna.NewDNADbCache()
+var cache *dna.DNADbCache
 
-func Init(dir string) {
-	cache.Init(dir)
+func InitCache(dir string) {
+
+	cache = dna.NewDNADbCache(dir)
 }
 
 func Dir() string {

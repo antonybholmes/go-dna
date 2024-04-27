@@ -220,15 +220,10 @@ type DNADbCache struct {
 	Cache map[string]*DNADb
 }
 
-func NewDNADbCache() *DNADbCache {
-	return &DNADbCache{Dir: "", Cache: map[string]*DNADb{}}
-}
-
-func (dnadbcache *DNADbCache) Init(dir string) {
+func NewDNADbCache(dir string) *DNADbCache {
 	log.Debug().Msgf("init dnadbcache: %s", dir)
 
-	dnadbcache.Dir = dir
-	//dnadbcache.Cache = new(map[string]*DNADb)
+	return &DNADbCache{Dir: dir, Cache: map[string]*DNADb{}}
 }
 
 func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask string) (*DNADb, error) {
