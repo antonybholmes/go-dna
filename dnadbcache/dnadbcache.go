@@ -5,7 +5,6 @@ import "github.com/antonybholmes/go-dna"
 var cache *dna.DNADbCache
 
 func InitCache(dir string) {
-
 	cache = dna.NewDNADbCache(dir)
 }
 
