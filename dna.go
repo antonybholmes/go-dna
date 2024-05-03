@@ -215,18 +215,18 @@ func changeCase(dna []byte, format string, repeatMask string) {
 
 }
 
-type DNADbCache struct {
+type DNADBCache struct {
 	Dir   string
-	Cache map[string]*DNADb
+	Cache map[string]*DNADB
 }
 
-func NewDNADbCache(dir string) *DNADbCache {
+func NewDNADBCache(dir string) *DNADBCache {
 	log.Debug().Msgf("init dnadbcache: %s", dir)
 
-	return &DNADbCache{Dir: dir, Cache: map[string]*DNADb{}}
+	return &DNADBCache{Dir: dir, Cache: map[string]*DNADB{}}
 }
 
-func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask string) (*DNADb, error) {
+func (dnadbcache *DNADBCache) DB(assembly string, format string, repeatMask string) (*DNADB, error) {
 	key := fmt.Sprintf("%s:%s:%s", assembly, format, repeatMask)
 
 	//log.Debug().Msgf("key %s", key)
@@ -243,7 +243,7 @@ func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask stri
 			return nil, fmt.Errorf("%s is not a valid assembly", assembly)
 		}
 
-		db := NewDNADb(dir, format, repeatMask)
+		db := NewDNADB(dir, format, repeatMask)
 
 		dnadbcache.Cache[key] = db
 	}
@@ -251,18 +251,18 @@ func (dnadbcache *DNADbCache) Db(assembly string, format string, repeatMask stri
 	return dnadbcache.Cache[key], nil
 }
 
-type DNADb struct {
+type DNADB struct {
 	Dir        string
 	Format     string
 	RepeatMask string
 }
 
-func NewDNADb(dir string, format string,
-	repeatMask string) *DNADb {
-	return &DNADb{dir, format, repeatMask}
+func NewDNADB(dir string, format string,
+	repeatMask string) *DNADB {
+	return &DNADB{dir, format, repeatMask}
 }
 
-func (dnadb *DNADb) DNA(location *Location, rev bool, comp bool) (string, error) {
+func (dnadb *DNADB) DNA(location *Location, rev bool, comp bool) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1

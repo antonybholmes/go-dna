@@ -13,7 +13,7 @@ func TestWithin(t *testing.T) {
 		t.Fatalf(`err %s`, err)
 	}
 
-	dnadb := NewDNADb("/ifs/scratch/cancer/Lab_RDF/ngs/dna/hg19", "", "")
+	dnadb := NewDNADB("/ifs/scratch/cancer/Lab_RDF/ngs/dna/hg19", "", "")
 
 	dna, err := dnadb.DNA(location, false, false)
 
