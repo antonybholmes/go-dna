@@ -52,6 +52,10 @@ func (location *Location) Mid() uint {
 	return (location.Start + location.End) / 2
 }
 
+func (location *Location) Len() uint {
+	return location.End - location.Start + 1
+}
+
 func ParseLocation(location string) (*Location, error) {
 	matched, err := regexp.MatchString(`^chr([0-9]+|[xyXY]):\d+-\d+$`, location)
 
