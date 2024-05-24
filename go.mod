@@ -6,7 +6,7 @@ replace github.com/antonybholmes/go-math => ../go-math
 
 require (
 	github.com/antonybholmes/go-math v0.0.0-20240215163921-12bb7e52185c
-	github.com/rs/zerolog v1.32.0
+	github.com/rs/zerolog v1.33.0
 )
 
 require (

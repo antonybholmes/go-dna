@@ -81,3 +81,19 @@ func ParseLocation(location string) (*Location, error) {
 
 	return NewLocation(chr, uint(start), uint(end)), nil
 }
+
+func ParseLocations(locations []string) ([]*Location, error) {
+	ret := make([]*Location, 0, len(locations))
+
+	for _, l := range locations {
+		loc, err := ParseLocation(l)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, loc)
+	}
+
+	return ret, nil
+}
