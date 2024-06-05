@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -216,22 +217,57 @@ func changeCase(dna []byte, format string, repeatMask string) {
 }
 
 type DNADBCache struct {
-	Dir   string
-	Cache map[string]*DNADB
+	Dir      string
+	CacheMap map[string]*DNADB
 }
 
 func NewDNADBCache(dir string) *DNADBCache {
-	log.Debug().Msgf("init dnadbcache: %s", dir)
+	cacheMap := make(map[string]*DNADB)
 
-	return &DNADBCache{Dir: dir, Cache: map[string]*DNADB{}}
+	files, err := os.ReadDir(dir)
+
+	log.Debug().Msgf("---- dna ----")
+
+	if err != nil {
+		log.Fatal().Msgf("error opening %s", dir)
+	}
+
+	for _, file := range files {
+		fileInfo, err := os.Stat(filepath.Join(dir, file.Name()))
+		if err != nil {
+			log.Debug().Msgf("%s", err)
+			continue
+		}
+
+		log.Debug().Msgf("dna %s %v", file.Name())
+
+		if fileInfo.IsDir() {
+			db := NewDNADB(filepath.Join(dir, file.Name()))
+			cacheMap[file.Name()] = db
+		}
+	}
+
+	return &DNADBCache{dir, cacheMap}
 }
 
-func (dnadbcache *DNADBCache) DB(assembly string, format string, repeatMask string) (*DNADB, error) {
-	key := fmt.Sprintf("%s:%s:%s", assembly, format, repeatMask)
+func (cache *DNADBCache) List() []string {
+
+	ids := make([]string, 0, len(cache.CacheMap))
+
+	for id := range cache.CacheMap {
+		ids = append(ids, id)
+	}
+
+	sort.Strings(ids)
+
+	return ids
+}
+
+func (dnadbcache *DNADBCache) DB(assembly string) (*DNADB, error) {
 
 	//log.Debug().Msgf("key %s", key)
 
-	_, ok := dnadbcache.Cache[key]
+	_, ok := dnadbcache.CacheMap[assembly]
 
 	if !ok {
 
@@ -243,26 +279,23 @@ func (dnadbcache *DNADBCache) DB(assembly string, format string, repeatMask stri
 			return nil, fmt.Errorf("%s is not a valid assembly", assembly)
 		}
 
-		db := NewDNADB(dir, format, repeatMask)
+		db := NewDNADB(dir)
 
-		dnadbcache.Cache[key] = db
+		dnadbcache.CacheMap[assembly] = db
 	}
 
-	return dnadbcache.Cache[key], nil
+	return dnadbcache.CacheMap[assembly], nil
 }
 
 type DNADB struct {
-	Dir        string
-	Format     string
-	RepeatMask string
+	Dir string
 }
 
-func NewDNADB(dir string, format string,
-	repeatMask string) *DNADB {
-	return &DNADB{dir, format, repeatMask}
+func NewDNADB(dir string) *DNADB {
+	return &DNADB{dir}
 }
 
-func (dnadb *DNADB) DNA(location *Location, rev bool, comp bool) (string, error) {
+func (dnadb *DNADB) DNA(location *Location, format string, repeatMask string, rev bool, comp bool) (string, error) {
 	s := location.Start - 1
 	e := location.End - 1
 	l := e - s + 1
@@ -328,9 +361,9 @@ func (dnadb *DNADB) DNA(location *Location, rev bool, comp bool) (string, error)
 		Comp(dna)
 	}
 
-	changeRepeatMask(dna, dnadb.RepeatMask)
+	changeRepeatMask(dna, repeatMask)
 
-	changeCase(dna, dnadb.Format, dnadb.RepeatMask)
+	changeCase(dna, format, repeatMask)
 
 	return string(dna), nil
 }
