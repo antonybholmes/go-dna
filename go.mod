@@ -2,10 +2,10 @@ module github.com/antonybholmes/go-dna
 
 go 1.22.0
 
-replace github.com/antonybholmes/go-math => ../go-math
+replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
-	github.com/antonybholmes/go-math v0.0.0-20240215163921-12bb7e52185c
+	github.com/antonybholmes/go-basemath v0.0.0-20240215163921-12bb7e52185c
 	github.com/rs/zerolog v1.33.0
 )
 

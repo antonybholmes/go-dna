@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/antonybholmes/go-math"
+	"github.com/antonybholmes/go-basemath"
 )
 
 type TSSRegion struct {
@@ -40,9 +40,9 @@ func NewLocation(chr string, start uint, end uint) *Location {
 		chr = fmt.Sprintf("chr%s", chr)
 	}
 
-	s := math.UintMax(1, math.UintMin(start, end))
+	s := basemath.UintMax(1, basemath.UintMin(start, end))
 
-	return &Location{Chr: chr, Start: s, End: math.UintMax(s, end)}
+	return &Location{Chr: chr, Start: s, End: basemath.UintMax(s, end)}
 }
 
 func (location *Location) String() string {
