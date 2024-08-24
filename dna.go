@@ -239,8 +239,6 @@ func NewDNADBCache(dir string) *DNADBCache {
 			continue
 		}
 
-		log.Debug().Msgf("dna %s %v", file.Name())
-
 		if fileInfo.IsDir() {
 			db := NewDNADB(filepath.Join(dir, file.Name()))
 			cacheMap[file.Name()] = db
