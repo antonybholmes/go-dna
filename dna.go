@@ -217,8 +217,8 @@ func changeCase(dna []byte, format string, repeatMask string) {
 }
 
 type DNADBCache struct {
-	Dir      string
 	CacheMap map[string]*DNADB
+	Dir      string
 }
 
 func NewDNADBCache(dir string) *DNADBCache {
@@ -245,7 +245,7 @@ func NewDNADBCache(dir string) *DNADBCache {
 		}
 	}
 
-	return &DNADBCache{dir, cacheMap}
+	return &DNADBCache{Dir: dir, CacheMap: cacheMap}
 }
 
 func (cache *DNADBCache) List() []string {
