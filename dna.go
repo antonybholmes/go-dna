@@ -229,7 +229,7 @@ func NewDNADBCache(dir string) *DNADBCache {
 	log.Debug().Msgf("---- dna ----")
 
 	if err != nil {
-		log.Fatal().Msgf("error opening %s", dir)
+		log.Fatal().Msgf("dna error opening %s", dir)
 	}
 
 	for _, file := range files {
