@@ -1,7 +1,6 @@
 package dna
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -49,9 +48,9 @@ func (location *Location) String() string {
 	return fmt.Sprintf("%s:%d-%d", location.Chr, location.Start, location.End)
 }
 
-func (location *Location) MarshalJSON() ([]byte, error) {
-	return json.Marshal(location.String())
-}
+// func (location *Location) MarshalJSON() ([]byte, error) {
+// 	return json.Marshal(location.String())
+// }
 
 func (location *Location) Mid() uint {
 	return (location.Start + location.End) / 2
