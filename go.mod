@@ -5,7 +5,7 @@ go 1.23
 replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
-	github.com/antonybholmes/go-basemath v0.0.0-20240825181410-a6174a39116c
+	github.com/antonybholmes/go-basemath v0.0.0-20241223034309-5f70a342a0e3
 	github.com/rs/zerolog v1.33.0
 )
 
