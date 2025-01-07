@@ -39,9 +39,9 @@ func NewLocation(chr string, start uint, end uint) *Location {
 		chr = fmt.Sprintf("chr%s", chr)
 	}
 
-	s := basemath.UintMax(1, basemath.UintMin(start, end))
+	s := basemath.Max(1, basemath.Min(start, end))
 
-	return &Location{Chr: chr, Start: s, End: basemath.UintMax(s, end)}
+	return &Location{Chr: chr, Start: s, End: basemath.Max(s, end)}
 }
 
 func (location *Location) String() string {
