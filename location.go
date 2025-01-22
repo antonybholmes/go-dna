@@ -49,6 +49,11 @@ func (location *Location) String() string {
 }
 
 // func (location *Location) MarshalJSON() ([]byte, error) {
+// 	// Customize the JSON output here
+// 	return []byte(location.String()), nil
+// }
+
+// func (location *Location) MarshalJSON() ([]byte, error) {
 // 	return json.Marshal(location.String())
 // }
 
