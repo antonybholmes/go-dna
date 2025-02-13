@@ -1,11 +1,11 @@
 module github.com/antonybholmes/go-dna
 
-go 1.23
+go 1.24
 
 replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
-	github.com/antonybholmes/go-basemath v0.0.0-20250205152412-840349f1ca5c
+	github.com/antonybholmes/go-basemath v0.0.0-20250210230743-9da55b7ac3fd
 	github.com/rs/zerolog v1.33.0
 )
 
