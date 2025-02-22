@@ -2,6 +2,8 @@ module github.com/antonybholmes/go-dna
 
 go 1.24
 
+toolchain go1.24.0
+
 replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
