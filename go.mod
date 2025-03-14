@@ -7,7 +7,7 @@ toolchain go1.24.0
 replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
-	github.com/antonybholmes/go-basemath v0.0.0-20250303144104-ebe30afaed11
+	github.com/antonybholmes/go-basemath v0.0.0-20250307171544-f522e91d1448
 	github.com/rs/zerolog v1.33.0
 )
 
