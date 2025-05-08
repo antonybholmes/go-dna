@@ -106,3 +106,42 @@ func ParseLocations(locations []string) ([]*Location, error) {
 
 	return ret, nil
 }
+
+// Convert a chromosome string to a number suitable for sorting
+// These numbers are to ensure a sort order and do not necessarily
+// correspond to conventions, for example chrX is often represented
+// as 23, but to allow for more chromosomes we use 1000.
+func ChromToInt(chr string) uint16 {
+	chr = strings.TrimPrefix(strings.ToLower(chr), "chr")
+	switch chr {
+	case "x":
+		return 1000 //23
+	case "y":
+		return 2000 //24
+	case "m", "mt":
+		return 3000 //25
+	default:
+		n, err := strconv.Atoi(chr)
+		if err != nil {
+			return 9999 // // Put unknown chromosomes last
+		}
+		return uint16(n)
+	}
+}
+
+// -------- Position-based sorter --------
+type SortLocByPos []*Location
+
+func (locations SortLocByPos) Len() int      { return len(locations) }
+func (locations SortLocByPos) Swap(i, j int) { locations[i], locations[j] = locations[j], locations[i] }
+func (locations SortLocByPos) Less(i, j int) bool {
+	ci := ChromToInt(locations[i].Chr)
+	cj := ChromToInt(locations[j].Chr)
+
+	// on different chrs so sort by chr
+	if ci != cj {
+		return ci < cj
+	}
+
+	return locations[i].Start < locations[j].Start
+}
