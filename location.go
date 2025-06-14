@@ -33,9 +33,14 @@ type Location struct {
 }
 
 func NewLocation(chr string, start uint, end uint) *Location {
-	chr = strings.ToLower(chr)
 
-	if !strings.Contains(chr, "chr") {
+	// standardize chromosome names
+	// e.g. chr1, chr2, ..., chrX, chrY, chrM
+	// This is to ensure that the chromosome names are consistent
+	// and can be easily parsed and compared.
+	chr = strings.Replace(strings.ToUpper(chr), "CHR", "chr", 1)
+
+	if !strings.HasPrefix(chr, "chr") {
 		chr = fmt.Sprintf("chr%s", chr)
 	}
 
