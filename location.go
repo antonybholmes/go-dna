@@ -27,6 +27,7 @@ func (tssRegion *TSSRegion) Offset3P() uint {
 }
 
 type Location struct {
+	//id    uint16 `json:"-"` // Chromosome number for sorting
 	Chr   string `json:"chr"`
 	Start uint   `json:"start"`
 	End   uint   `json:"end"`
