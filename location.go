@@ -3,6 +3,7 @@ package dna
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -64,11 +65,11 @@ func (location *Location) String() string {
 // }
 
 func (location *Location) Mid() uint {
-	return (location.Start + location.End) / 2
+	return uint((location.Start + location.End) / 2)
 }
 
 func (location *Location) Len() uint {
-	return location.End - location.Start + 1
+	return uint(location.End - location.Start + 1)
 }
 
 func ParseLocation(location string) (*Location, error) {
@@ -82,13 +83,13 @@ func ParseLocation(location string) (*Location, error) {
 	chr := tokens[0]
 	tokens = strings.Split(tokens[1], "-")
 
-	start, err := strconv.ParseUint(tokens[0], 10, 32)
+	start, err := strconv.ParseInt(tokens[0], 10, 32)
 
 	if err != nil {
 		return nil, fmt.Errorf("%s does not seem like a valid start", tokens[0])
 	}
 
-	end, err := strconv.ParseUint(tokens[1], 10, 32)
+	end, err := strconv.ParseInt(tokens[1], 10, 32)
 
 	if err != nil {
 		return nil, fmt.Errorf("%s does not seem like a valid end", tokens[1])
@@ -117,7 +118,7 @@ func ParseLocations(locations []string) ([]*Location, error) {
 // These numbers are to ensure a sort order and do not necessarily
 // correspond to conventions, for example chrX is often represented
 // as 23, but to allow for more chromosomes we use 1000.
-func ChromToInt(chr string) uint16 {
+func ChromToInt(chr string) uint {
 	chr = strings.TrimPrefix(strings.ToLower(chr), "chr")
 	switch chr {
 	case "x":
@@ -131,23 +132,37 @@ func ChromToInt(chr string) uint16 {
 		if err != nil {
 			return 9999 // // Put unknown chromosomes last
 		}
-		return uint16(n)
+		return uint(n)
 	}
 }
 
-// -------- Position-based sorter --------
-type SortLocByPos []*Location
+func SortLocations(locations []*Location) {
+	slices.SortFunc(locations, func(a, b *Location) int {
+		ci := ChromToInt(a.Chr)
+		cj := ChromToInt(b.Chr)
 
-func (locations SortLocByPos) Len() int      { return len(locations) }
-func (locations SortLocByPos) Swap(i, j int) { locations[i], locations[j] = locations[j], locations[i] }
-func (locations SortLocByPos) Less(i, j int) bool {
-	ci := ChromToInt(locations[i].Chr)
-	cj := ChromToInt(locations[j].Chr)
+		// on different chrs so sort by chr
+		if ci != cj {
+			return int(ci) - int(cj)
+		}
 
-	// on different chrs so sort by chr
-	if ci != cj {
-		return ci < cj
-	}
-
-	return locations[i].Start < locations[j].Start
+		return int(a.Start) - int(b.Start)
+	})
 }
+
+// // -------- Position-based sorter --------
+// type SortLocByPos []*Location
+
+// func (locations SortLocByPos) Len() int      { return len(locations) }
+// func (locations SortLocByPos) Swap(i, j int) { locations[i], locations[j] = locations[j], locations[i] }
+// func (locations SortLocByPos) Less(i, j int) bool {
+// 	ci := ChromToInt(locations[i].Chr)
+// 	cj := ChromToInt(locations[j].Chr)
+
+// 	// on different chrs so sort by chr
+// 	if ci != cj {
+// 		return ci < cj
+// 	}
+
+// 	return locations[i].Start < locations[j].Start
+// }
