@@ -16,21 +16,27 @@ const (
 	STRAND_NONE = "."
 )
 
-type TSSRegion struct {
+type PromoterRegion struct {
 	offset5p uint
 	offset3p uint
 }
 
-func NewTSSRegion(offset5p uint, offset3p uint) *TSSRegion {
-	return &TSSRegion{offset5p, offset3p}
+var DEFAULT_PROMOTER_REGION = PromoterRegion{2000, 1000}
+
+func DefaultPromoterRegion() PromoterRegion {
+	return DEFAULT_PROMOTER_REGION
 }
 
-func (tssRegion *TSSRegion) Offset5P() uint {
-	return tssRegion.offset5p
+func NewPromoterRegion(offset5p uint, offset3p uint) *PromoterRegion {
+	return &PromoterRegion{offset5p, offset3p}
 }
 
-func (tssRegion *TSSRegion) Offset3P() uint {
-	return tssRegion.offset3p
+func (promoterRegion *PromoterRegion) Offset5P() uint {
+	return promoterRegion.offset5p
+}
+
+func (promoterRegion *PromoterRegion) Offset3P() uint {
+	return promoterRegion.offset3p
 }
 
 type Location struct {
