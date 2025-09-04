@@ -10,6 +10,12 @@ import (
 	"github.com/antonybholmes/go-basemath"
 )
 
+const (
+	STRAND_POS  = "+"
+	STRAND_NEG  = "-"
+	STRAND_NONE = "."
+)
+
 type TSSRegion struct {
 	offset5p uint
 	offset3p uint
@@ -29,14 +35,19 @@ func (tssRegion *TSSRegion) Offset3P() uint {
 
 type Location struct {
 	//id    uint16 `json:"-"` // Chromosome number for sorting
-	Chr   string `json:"chr"`
-	Start uint   `json:"start"`
-	End   uint   `json:"end"`
+	Chr    string `json:"chr"`
+	Start  uint   `json:"start"`
+	End    uint   `json:"end"`
+	Strand string `json:"strand,omitempty"` // +/-
 }
 
 func NewLocation(chr string, start uint, end uint) *Location {
+	return NewStrandedLocation(chr, start, end, STRAND_NONE)
+}
 
-	// standardize chromosome names
+func NewStrandedLocation(chr string, start uint, end uint, strand string) *Location {
+
+	// standardize chromosome names so that letters other than chr are capitalized
 	// e.g. chr1, chr2, ..., chrX, chrY, chrM
 	// This is to ensure that the chromosome names are consistent
 	// and can be easily parsed and compared.
@@ -48,7 +59,7 @@ func NewLocation(chr string, start uint, end uint) *Location {
 
 	s := basemath.Max(1, basemath.Min(start, end))
 
-	return &Location{Chr: chr, Start: s, End: basemath.Max(s, end)}
+	return &Location{Chr: chr, Start: s, End: basemath.Max(s, end), Strand: strand}
 }
 
 func (location *Location) String() string {
