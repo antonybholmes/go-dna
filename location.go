@@ -40,11 +40,10 @@ func (promoterRegion *PromoterRegion) Offset3P() uint {
 }
 
 type Location struct {
-	//id    uint16 `json:"-"` // Chromosome number for sorting
 	Chr    string `json:"chr"`
+	Strand string `json:"strand,omitempty"`
 	Start  uint   `json:"start"`
 	End    uint   `json:"end"`
-	Strand string `json:"strand,omitempty"` // +/-
 }
 
 func NewLocation(chr string, start uint, end uint) *Location {
