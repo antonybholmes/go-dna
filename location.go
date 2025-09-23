@@ -133,16 +133,18 @@ func ParseLocations(locations []string) ([]*Location, error) {
 // Convert a chromosome string to a number suitable for sorting
 // These numbers are to ensure a sort order and do not necessarily
 // correspond to conventions, for example chrX is often represented
-// as 23, but to allow for more chromosomes we use 1000.
+// as 23 in human, but we do not presume the species so we use
+// 1023 to allow for lots of chromosomes.
 func ChromToInt(chr string) uint {
 	chr = strings.TrimPrefix(strings.ToLower(chr), "chr")
+
 	switch chr {
 	case "x":
-		return 1000 //23
+		return 1023 //23
 	case "y":
-		return 2000 //24
+		return 1024 //24
 	case "m", "mt":
-		return 3000 //25
+		return 1025 //25
 	default:
 		n, err := strconv.Atoi(chr)
 		if err != nil {
