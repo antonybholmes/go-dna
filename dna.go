@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/rs/zerolog/log"
+	"github.com/antonybholmes/go-sys/log"
 )
 
 // var DNA_4BIT_DECODE_MAP = map[byte]byte{
