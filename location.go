@@ -10,16 +10,25 @@ import (
 	"github.com/antonybholmes/go-basemath"
 )
 
-const (
-	STRAND_POS  = "+"
-	STRAND_NEG  = "-"
-	STRAND_NONE = "."
+type (
+	PromoterRegion struct {
+		offset5p uint
+		offset3p uint
+	}
+
+	Location struct {
+		Chr    string `json:"chr"`
+		Strand string `json:"strand,omitempty"`
+		Start  uint   `json:"start"`
+		End    uint   `json:"end"`
+	}
 )
 
-type PromoterRegion struct {
-	offset5p uint
-	offset3p uint
-}
+const (
+	PosStrand      = "+"
+	NegStrand      = "-"
+	StrandNotGiven = "."
+)
 
 var DEFAULT_PROMOTER_REGION = PromoterRegion{2000, 1000}
 
@@ -39,15 +48,8 @@ func (promoterRegion *PromoterRegion) Offset3P() uint {
 	return promoterRegion.offset3p
 }
 
-type Location struct {
-	Chr    string `json:"chr"`
-	Strand string `json:"strand,omitempty"`
-	Start  uint   `json:"start"`
-	End    uint   `json:"end"`
-}
-
 func NewLocation(chr string, start uint, end uint) *Location {
-	return NewStrandedLocation(chr, start, end, STRAND_NONE)
+	return NewStrandedLocation(chr, start, end, StrandNotGiven)
 }
 
 func NewStrandedLocation(chr string, start uint, end uint, strand string) *Location {
