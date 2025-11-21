@@ -294,8 +294,8 @@ func NewDNADB(dir string) *DNADB {
 }
 
 func (dnadb *DNADB) DNA(location *Location, format string, repeatMask string, rev bool, comp bool) (string, error) {
-	s := location.Start - 1
-	e := location.End - 1
+	s := location.Start() - 1
+	e := location.End() - 1
 	l := e - s + 1
 	bs := s / 2
 	be := e / 2
@@ -303,7 +303,7 @@ func (dnadb *DNADB) DNA(location *Location, format string, repeatMask string, re
 
 	d := make([]byte, bl)
 
-	file := filepath.Join(dnadb.Dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr)))
+	file := filepath.Join(dnadb.Dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr())))
 
 	f, err := os.Open(file)
 
@@ -327,7 +327,7 @@ func (dnadb *DNADB) DNA(location *Location, format string, repeatMask string, re
 	byteIndex := 0
 	var v byte
 
-	for i := uint(0); i < l; i++ {
+	for i := 0; i < l; i++ {
 		// Which base we want in the byte
 		// If the start position s is even, we want the first
 		// 4 bits of the byte, else the lower 4 bits.

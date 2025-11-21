@@ -1,6 +1,7 @@
 package dna
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"slices"
@@ -9,19 +10,27 @@ import (
 	"sync"
 
 	"github.com/antonybholmes/go-basemath"
+	"github.com/antonybholmes/go-sys"
 )
 
 type (
 	PromoterRegion struct {
-		upstream   uint
-		downstream uint
+		upstream   int
+		downstream int
 	}
 
 	Location struct {
+		chr    string
+		strand string
+		start  int
+		end    int
+	}
+
+	jsonLocation struct {
 		Chr    string `json:"chr"`
 		Strand string `json:"strand,omitempty"`
-		Start  uint   `json:"start"`
-		End    uint   `json:"end"`
+		Start  int    `json:"start"`
+		End    int    `json:"end"`
 	}
 )
 
@@ -34,6 +43,8 @@ const (
 var (
 	once                  sync.Once
 	defaultPromoterRegion *PromoterRegion
+	chrRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+)`)
+	locRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+):([0-9,]+)-([0-9,]+)`)
 )
 
 func DefaultPromoterRegion() *PromoterRegion {
@@ -45,41 +56,68 @@ func DefaultPromoterRegion() *PromoterRegion {
 	//return NewPromoterRegion(2000, 1000)
 }
 
-func NewPromoterRegion(upstream uint, downstream uint) *PromoterRegion {
-	return &PromoterRegion{upstream, downstream}
+func NewPromoterRegion(upstream int, downstream int) *PromoterRegion {
+	return &PromoterRegion{basemath.AbsInt(upstream), basemath.AbsInt(downstream)}
 }
 
-func (promoterRegion *PromoterRegion) Upstream() uint {
+func (promoterRegion *PromoterRegion) Upstream() int {
 	return promoterRegion.upstream
 }
 
-func (promoterRegion *PromoterRegion) Downstream() uint {
+func (promoterRegion *PromoterRegion) Downstream() int {
 	return promoterRegion.downstream
 }
 
-func NewLocation(chr string, start uint, end uint) *Location {
+func NewLocation(chr string, start int, end int) (*Location, error) {
 	return NewStrandedLocation(chr, start, end, StrandNotGiven)
 }
 
-func NewStrandedLocation(chr string, start uint, end uint, strand string) *Location {
-
+func NewStrandedLocation(chr string, start int, end int, strand string) (*Location, error) {
 	// standardize chromosome names so that letters other than chr are capitalized
 	// e.g. chr1, chr2, ..., chrX, chrY, chrM
 	// This is to ensure that the chromosome names are consistent
 	// and can be easily parsed and compared.
-	chr = strings.Replace(strings.ToUpper(chr), "CHR", "chr", 1)
+	chr, err := ParseChr(chr)
 
-	if !strings.HasPrefix(chr, "chr") {
-		chr = fmt.Sprintf("chr%s", chr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid chromosome name: %s", chr)
 	}
+
+	start = basemath.AbsInt(start)
+	end = basemath.AbsInt(end)
 
 	s := basemath.Max(1, basemath.Min(start, end))
 
-	return &Location{Chr: chr, Start: s, End: basemath.Max(s, end), Strand: strand}
+	return &Location{chr: chr, start: s, end: basemath.Max(s, end), strand: strand}, nil
 }
 
+// Returns the base chromosome string without the "chr" prefix.
+func (location *Location) BaseChr() string {
+	return location.chr
+}
+
+// Returns the chromosome string with the "chr" prefix.
+func (location *Location) Chr() string {
+	return "chr" + location.chr
+}
+
+func (location *Location) Start() int {
+	return location.start
+}
+
+func (location *Location) End() int {
+	return location.end
+}
+
+func (location *Location) Strand() string {
+	return location.strand
+}
+
+// Returns the string representation of the location in the format "chr:start-end".
 func (location *Location) String() string {
-	return fmt.Sprintf("%s:%d-%d", location.Chr, location.Start, location.End)
+	return location.chr + ":" + strconv.Itoa(location.start) + "-" + strconv.Itoa(location.end)
+
+	//fmt.Sprintf("%s:%d-%d", location.Chr, location.Start, location.End)
 }
 
 // func (location *Location) MarshalJSON() ([]byte, error) {
@@ -91,38 +129,88 @@ func (location *Location) String() string {
 // 	return json.Marshal(location.String())
 // }
 
-func (location *Location) Mid() uint {
-	return uint((location.Start + location.End) / 2)
+// Returns the midpoint of the location rounded down to the nearest integer.
+func (location *Location) Mid() int {
+	return (location.start + location.end) / 2
 }
 
-func (location *Location) Len() uint {
-	return uint(location.End - location.Start + 1)
+// Returns the length of the location.
+func (location *Location) Len() int {
+	return location.end - location.start + 1
+}
+
+func (location *Location) MarshalJSON() ([]byte, error) {
+	return json.Marshal(jsonLocation{
+		Chr:    location.chr,
+		Strand: location.strand,
+		Start:  location.start,
+		End:    location.end,
+	})
+}
+
+func (location *Location) UnmarshalJSON(data []byte) error {
+	var jl jsonLocation
+
+	if err := json.Unmarshal(data, &jl); err != nil {
+		return err
+	}
+
+	location.chr = jl.Chr
+	location.strand = jl.Strand
+	location.start = jl.Start
+	location.end = jl.End
+
+	return nil
+}
+
+func ParseChr(location string) (string, error) {
+
+	matches := chrRegex.FindStringSubmatch(location)
+
+	if len(matches) < 1 {
+		return "", fmt.Errorf("%s does not seem like a valid chr", location)
+	}
+
+	chr := matches[1]
+
+	return chr, nil
 }
 
 func ParseLocation(location string) (*Location, error) {
-	matched, err := regexp.MatchString(`^chr([0-9]+|[xyXY]):\d+-\d+$`, location)
 
-	if !matched || err != nil {
+	matches := locRegex.FindStringSubmatch(location)
+
+	if len(matches) < 3 {
 		return nil, fmt.Errorf("%s does not seem like a valid location", location)
 	}
 
-	tokens := strings.Split(location, ":")
-	chr := tokens[0]
-	tokens = strings.Split(tokens[1], "-")
+	chr := matches[1]
 
-	start, err := strconv.ParseInt(tokens[0], 10, 32)
+	start, err := sys.Atoi(matches[2])
 
 	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid start", tokens[0])
+		return nil, fmt.Errorf("%s does not seem like a valid start", matches[2])
 	}
 
-	end, err := strconv.ParseInt(tokens[1], 10, 32)
+	if start < 1 {
+		return nil, fmt.Errorf("start position %d is less than 1", start)
+	}
+
+	end, err := sys.Atoi(matches[3])
 
 	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid end", tokens[1])
+		return nil, fmt.Errorf("%s does not seem like a valid end", matches[3])
 	}
 
-	return NewLocation(chr, uint(start), uint(end)), nil
+	if end < 1 {
+		return nil, fmt.Errorf("end position %d is less than 1", end)
+	}
+
+	if end < start {
+		return nil, fmt.Errorf("end position %d is less than start position %d", end, start)
+	}
+
+	return NewLocation(chr, start, end)
 }
 
 func ParseLocations(locations []string) ([]*Location, error) {
@@ -145,8 +233,11 @@ func ParseLocations(locations []string) ([]*Location, error) {
 // These numbers are to ensure a sort order and do not necessarily
 // correspond to conventions, for example chrX is often represented
 // as 23 in human, but we do not presume the species so we use
-// 1023 to allow for lots of chromosomes.
-func ChromToInt(chr string) uint {
+// 1023 to allow for lots of chromosomes. chrN is converted to N where
+// N is an integer. chrX, chrY, chrM are converted to large numbers to
+// ensure they sort after numbered chromosomes. Unknown chromosomes
+// are converted to 9999 to ensure they sort last.
+func ChromToInt(chr string) int {
 	chr = strings.TrimPrefix(strings.ToLower(chr), "chr")
 
 	switch chr {
@@ -157,26 +248,55 @@ func ChromToInt(chr string) uint {
 	case "m", "mt":
 		return 1025 //25
 	default:
-		n, err := strconv.Atoi(chr)
+		n, err := sys.Atoi(chr)
 		if err != nil {
 			return 9999 // // Put unknown chromosomes last
 		}
-		return uint(n)
+		return n
 	}
 }
 
+// SortLocations sorts locations in place by chr, start, end
 func SortLocations(locations []*Location) {
 	slices.SortFunc(locations, func(a, b *Location) int {
-		ci := ChromToInt(a.Chr)
-		cj := ChromToInt(b.Chr)
+		ci := ChromToInt(a.Chr())
+		cj := ChromToInt(b.Chr())
 
 		// on different chrs so sort by chr
 		if ci != cj {
 			return int(ci) - int(cj)
 		}
 
-		return int(a.Start) - int(b.Start)
+		// same chr so sort by start
+		diff := a.Start() - b.Start()
+
+		if diff != 0 {
+			return diff
+		}
+
+		// same start so sort by end
+		return a.End() - b.End()
 	})
+}
+
+// SortLocationsFunc is a comparison function for sorting locations by chr, start, end
+// suitable for use with slices.SortFunc
+func SortLocationsFunc(a, b *Location) bool {
+
+	ci := ChromToInt(a.Chr())
+	cj := ChromToInt(b.Chr())
+
+	// on different chrs so sort by chr
+	if ci != cj {
+		return ci < cj
+	}
+
+	if a.Start()-b.Start() != 0 {
+		return a.Start() < b.Start()
+	}
+
+	// same start so sort by end
+	return a.End() < b.End()
 }
 
 // // -------- Position-based sorter --------
