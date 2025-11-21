@@ -6,14 +6,15 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/antonybholmes/go-basemath"
 )
 
 type (
 	PromoterRegion struct {
-		offset5p uint
-		offset3p uint
+		upstream   uint
+		downstream uint
 	}
 
 	Location struct {
@@ -30,22 +31,30 @@ const (
 	StrandNotGiven = "."
 )
 
-var DEFAULT_PROMOTER_REGION = PromoterRegion{2000, 1000}
+var (
+	once                  sync.Once
+	defaultPromoterRegion *PromoterRegion
+)
 
-func DefaultPromoterRegion() PromoterRegion {
-	return DEFAULT_PROMOTER_REGION
+func DefaultPromoterRegion() *PromoterRegion {
+	once.Do(func() {
+		defaultPromoterRegion = NewPromoterRegion(2000, 1000)
+	})
+	return defaultPromoterRegion
+
+	//return NewPromoterRegion(2000, 1000)
 }
 
-func NewPromoterRegion(offset5p uint, offset3p uint) *PromoterRegion {
-	return &PromoterRegion{offset5p, offset3p}
+func NewPromoterRegion(upstream uint, downstream uint) *PromoterRegion {
+	return &PromoterRegion{upstream, downstream}
 }
 
-func (promoterRegion *PromoterRegion) Offset5P() uint {
-	return promoterRegion.offset5p
+func (promoterRegion *PromoterRegion) Upstream() uint {
+	return promoterRegion.upstream
 }
 
-func (promoterRegion *PromoterRegion) Offset3P() uint {
-	return promoterRegion.offset3p
+func (promoterRegion *PromoterRegion) Downstream() uint {
+	return promoterRegion.downstream
 }
 
 func NewLocation(chr string, start uint, end uint) *Location {
