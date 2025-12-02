@@ -6,8 +6,10 @@ import (
 	"github.com/antonybholmes/go-dna"
 )
 
-var instance *dna.DNADBCache
-var once sync.Once
+var (
+	instance *dna.DNADBCache
+	once     sync.Once
+)
 
 func InitCache(dir string) *dna.DNADBCache {
 	once.Do(func() {

@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/antonybholmes/go-basemath"
 	"github.com/antonybholmes/go-sys"
@@ -41,16 +40,15 @@ const (
 )
 
 var (
-	once                  sync.Once
-	defaultPromoterRegion *PromoterRegion
+	defaultPromoterRegion = NewPromoterRegion(2000, 1000)
 	chrRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+)`)
 	locRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+):([0-9,]+)-([0-9,]+)`)
 )
 
 func DefaultPromoterRegion() *PromoterRegion {
-	once.Do(func() {
-		defaultPromoterRegion = NewPromoterRegion(2000, 1000)
-	})
+	// once.Do(func() {
+	// 	defaultPromoterRegion = NewPromoterRegion(2000, 1000)
+	// })
 	return defaultPromoterRegion
 
 	//return NewPromoterRegion(2000, 1000)

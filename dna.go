@@ -23,6 +23,8 @@ import (
 // 	10: 110,
 // }
 
+const BASE_N byte = 78
+
 // use an array for speed since
 // we only have 16 values and we
 // know explicitly what each value
@@ -45,8 +47,6 @@ var DNA_4BIT_DECODE_MAP = [16]byte{
 	0,
 	0,
 }
-
-const BASE_N byte = 78
 
 // This is simple complementary lookup
 // map for DNA bases represented as
