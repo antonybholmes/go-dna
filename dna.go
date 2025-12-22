@@ -216,13 +216,13 @@ func changeCase(dna []byte, format string, repeatMask string) {
 
 }
 
-type DNADBCache struct {
-	CacheMap map[string]*DNADB
+type DnaDB struct {
+	CacheMap map[string]*AssemblyDB
 	Dir      string
 }
 
-func NewDNADBCache(dir string) *DNADBCache {
-	cacheMap := make(map[string]*DNADB)
+func NewDnaDB(dir string) *DnaDB {
+	cacheMap := make(map[string]*AssemblyDB)
 
 	files, err := os.ReadDir(dir)
 
@@ -240,19 +240,19 @@ func NewDNADBCache(dir string) *DNADBCache {
 		}
 
 		if fileInfo.IsDir() {
-			db := NewDNADB(filepath.Join(dir, file.Name()))
+			db := NewAssemblyDB(filepath.Join(dir, file.Name()))
 			cacheMap[file.Name()] = db
 		}
 	}
 
-	return &DNADBCache{Dir: dir, CacheMap: cacheMap}
+	return &DnaDB{Dir: dir, CacheMap: cacheMap}
 }
 
-func (cache *DNADBCache) List() []string {
+func (ddb *DnaDB) List() []string {
 
-	ids := make([]string, 0, len(cache.CacheMap))
+	ids := make([]string, 0, len(ddb.CacheMap))
 
-	for id := range cache.CacheMap {
+	for id := range ddb.CacheMap {
 		ids = append(ids, id)
 	}
 
@@ -261,15 +261,15 @@ func (cache *DNADBCache) List() []string {
 	return ids
 }
 
-func (dnadbcache *DNADBCache) DB(assembly string) (*DNADB, error) {
+func (ddb *DnaDB) DB(assembly string) (*AssemblyDB, error) {
 
 	//log.Debug().Msgf("key %s", key)
 
-	_, ok := dnadbcache.CacheMap[assembly]
+	_, ok := ddb.CacheMap[assembly]
 
 	if !ok {
 
-		dir := filepath.Join(dnadbcache.Dir, assembly)
+		dir := filepath.Join(ddb.Dir, assembly)
 
 		_, err := os.Stat(dir)
 
@@ -277,23 +277,23 @@ func (dnadbcache *DNADBCache) DB(assembly string) (*DNADB, error) {
 			return nil, fmt.Errorf("%s is not a valid assembly", assembly)
 		}
 
-		db := NewDNADB(dir)
+		db := NewAssemblyDB(dir)
 
-		dnadbcache.CacheMap[assembly] = db
+		ddb.CacheMap[assembly] = db
 	}
 
-	return dnadbcache.CacheMap[assembly], nil
+	return ddb.CacheMap[assembly], nil
 }
 
-type DNADB struct {
+type AssemblyDB struct {
 	Dir string
 }
 
-func NewDNADB(dir string) *DNADB {
-	return &DNADB{dir}
+func NewAssemblyDB(dir string) *AssemblyDB {
+	return &AssemblyDB{dir}
 }
 
-func (dnadb *DNADB) DNA(location *Location, format string, repeatMask string, rev bool, comp bool) (string, error) {
+func (adb *AssemblyDB) DNA(location *Location, format string, repeatMask string, rev bool, comp bool) (string, error) {
 	s := location.Start() - 1
 	e := location.End() - 1
 	l := e - s + 1
@@ -303,7 +303,7 @@ func (dnadb *DNADB) DNA(location *Location, format string, repeatMask string, re
 
 	d := make([]byte, bl)
 
-	file := filepath.Join(dnadb.Dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr())))
+	file := filepath.Join(adb.Dir, fmt.Sprintf("%s.dna.4bit", strings.ToLower(location.Chr())))
 
 	f, err := os.Open(file)
 

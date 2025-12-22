@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/antonybholmes/go-dna"
-	"github.com/antonybholmes/go-dna/dnadbcache"
+	"github.com/antonybholmes/go-dna/dnadb"
 	"github.com/antonybholmes/go-web"
 	"github.com/gin-gonic/gin"
 )
@@ -158,7 +158,7 @@ func ParseDNAQuery(c *gin.Context) (*DNAQuery, error) {
 }
 
 func GenomesRoute(c *gin.Context) {
-	web.MakeDataResp(c, "", dnadbcache.GetInstance().List())
+	web.MakeDataResp(c, "", dnadb.GetInstance().List())
 }
 
 func DNARoute(c *gin.Context) {
@@ -178,7 +178,7 @@ func DNARoute(c *gin.Context) {
 		return
 	}
 
-	dnadb, err := dnadbcache.Db(assembly)
+	dnadb, err := dnadb.Db(assembly)
 
 	if err != nil {
 		c.Error(err)

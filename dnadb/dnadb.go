@@ -1,4 +1,4 @@
-package dnadbcache
+package dnadb
 
 import (
 	"sync"
@@ -7,19 +7,19 @@ import (
 )
 
 var (
-	instance *dna.DNADBCache
+	instance *dna.DnaDB
 	once     sync.Once
 )
 
-func InitCache(dir string) *dna.DNADBCache {
+func InitDnaDB(dir string) *dna.DnaDB {
 	once.Do(func() {
-		instance = dna.NewDNADBCache(dir)
+		instance = dna.NewDnaDB(dir)
 	})
 
 	return instance
 }
 
-func GetInstance() *dna.DNADBCache {
+func GetInstance() *dna.DnaDB {
 	return instance
 }
 
@@ -27,6 +27,6 @@ func Dir() string {
 	return instance.Dir
 }
 
-func Db(assembly string) (*dna.DNADB, error) {
+func Db(assembly string) (*dna.AssemblyDB, error) {
 	return instance.DB(assembly)
 }
