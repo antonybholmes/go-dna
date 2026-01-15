@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/antonybholmes/go-basemath"
 	"github.com/antonybholmes/go-sys"
@@ -91,12 +92,12 @@ func NewStrandedLocation(chr string, start int, end int, strand string) (*Locati
 
 // Returns the base chromosome string without the "chr" prefix.
 func (location *Location) BaseChr() string {
-	return location.chr
+	return strings.TrimPrefix(location.chr, "chr")
 }
 
 // Returns the chromosome string with the "chr" prefix.
 func (location *Location) Chr() string {
-	return "chr" + location.chr
+	return location.chr
 }
 
 func (location *Location) Start() int {
@@ -111,7 +112,7 @@ func (location *Location) Strand() string {
 	return location.strand
 }
 
-// Returns the string representation of the location in the format "chr:start-end".
+// Returns the string representation of the location in the format "chrX:start-end".
 func (location *Location) String() string {
 	return location.chr + ":" + strconv.Itoa(location.start) + "-" + strconv.Itoa(location.end)
 
@@ -162,16 +163,39 @@ func (location *Location) UnmarshalJSON(data []byte) error {
 }
 
 func ParseChr(location string) (string, error) {
+	location = strings.ToUpper(strings.TrimSpace(location))
 
-	matches := chrRegex.FindStringSubmatch(location)
+	location = strings.TrimPrefix(location, "CHR")
 
-	if len(matches) < 1 {
+	// should test if remaining is either all digits or a known letter
+	// loop over string to check
+
+	digitCount := 0
+	letterCount := 0
+
+	for _, c := range location {
+		if unicode.IsDigit(c) {
+			digitCount++
+		}
+
+		if unicode.IsLetter(c) {
+			letterCount++
+		}
+	}
+
+	if letterCount > 0 && digitCount > 0 {
 		return "", fmt.Errorf("%s does not seem like a valid chr", location)
 	}
 
-	chr := matches[1]
+	// matches := chrRegex.FindStringSubmatch(location)
 
-	return chr, nil
+	// if len(matches) < 1 {
+	// 	return "", fmt.Errorf("%s does not seem like a valid chr", location)
+	// }
+
+	// chr := matches[1]
+
+	return "chr" + location, nil
 }
 
 func ParseLocation(location string) (*Location, error) {
