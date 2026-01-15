@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/antonybholmes/go-basemath"
 	"github.com/antonybholmes/go-sys"
@@ -42,8 +41,8 @@ const (
 
 var (
 	defaultPromoterRegion = NewPromoterRegion(2000, 1000)
-	chrRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+)`)
-	locRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+):([0-9,]+)-([0-9,]+)`)
+	//chrRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+)`)
+	locRegex = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+):([0-9,]+)-([0-9,]+)`)
 )
 
 func DefaultPromoterRegion() *PromoterRegion {
@@ -82,12 +81,12 @@ func NewStrandedLocation(chr string, start int, end int, strand string) (*Locati
 		return nil, fmt.Errorf("invalid chromosome name: %s", chr)
 	}
 
-	start = basemath.AbsInt(start)
-	end = basemath.AbsInt(end)
+	// limit strand values
+	strand = ParseStrand(strand)
 
-	s := basemath.Max(1, basemath.Min(start, end))
+	loc := ParseStartEnd(start, end)
 
-	return &Location{chr: chr, start: s, end: basemath.Max(s, end), strand: strand}, nil
+	return &Location{chr: chr, start: loc[0], end: loc[1], strand: strand}, nil
 }
 
 // Returns the base chromosome string without the "chr" prefix.
@@ -138,6 +137,7 @@ func (location *Location) Len() int {
 	return location.end - location.start + 1
 }
 
+// Create a JSON representation of the coordinate
 func (location *Location) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jsonLocation{
 		Chr:    location.chr,
@@ -154,10 +154,20 @@ func (location *Location) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	location.chr = jl.Chr
-	location.strand = jl.Strand
-	location.start = jl.Start
-	location.end = jl.End
+	// Still parse it so we are not loading complete rubbish
+
+	chr, err := ParseChr(jl.Chr)
+
+	if err != nil {
+		return err
+	}
+
+	loc := ParseStartEnd(jl.Start, jl.End)
+
+	location.chr = chr
+	location.strand = ParseStrand(jl.Strand)
+	location.start = loc[0]
+	location.end = loc[1]
 
 	return nil
 }
@@ -165,27 +175,29 @@ func (location *Location) UnmarshalJSON(data []byte) error {
 func ParseChr(location string) (string, error) {
 	location = strings.ToUpper(strings.TrimSpace(location))
 
+	// remove any prefix
 	location = strings.TrimPrefix(location, "CHR")
 
 	// should test if remaining is either all digits or a known letter
 	// loop over string to check
 
-	digitCount := 0
-	letterCount := 0
+	// digitCount := 0
+	// letterCount := 0
 
-	for _, c := range location {
-		if unicode.IsDigit(c) {
-			digitCount++
-		}
+	// for _, c := range location {
+	// 	if unicode.IsDigit(c) {
+	// 		digitCount++
+	// 	}
 
-		if unicode.IsLetter(c) {
-			letterCount++
-		}
-	}
+	// 	if unicode.IsLetter(c) {
+	// 		letterCount++
+	// 	}
+	// }
 
-	if letterCount > 0 && digitCount > 0 {
-		return "", fmt.Errorf("%s does not seem like a valid chr", location)
-	}
+	// // we must either be all letter
+	// if letterCount > 0 && digitCount > 0 {
+	// 	return "", fmt.Errorf("%s does not seem like a valid chr", location)
+	// }
 
 	// matches := chrRegex.FindStringSubmatch(location)
 
@@ -196,6 +208,27 @@ func ParseChr(location string) (string, error) {
 	// chr := matches[1]
 
 	return "chr" + location, nil
+}
+
+func ParseStrand(strand string) string {
+	if strand != "+" && strand != "-" {
+		return "."
+	}
+
+	return strand
+}
+
+func ParseStartEnd(start int, end int) []int {
+	start = basemath.AbsInt(start)
+	end = basemath.AbsInt(end)
+
+	// s is 1 based and the smaller of the two
+	// this is to ensure coordinates are consistent
+	// on the forward strand
+	s := basemath.Max(1, basemath.Min(start, end))
+	e := basemath.Max(s, end)
+
+	return []int{s, e}
 }
 
 func ParseLocation(location string) (*Location, error) {
