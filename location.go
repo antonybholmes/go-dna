@@ -232,29 +232,37 @@ func ParseStartEnd(start int, end int) []int {
 }
 
 func ParseLocation(location string) (*Location, error) {
-
-	matches := locRegex.FindStringSubmatch(location)
-
-	if len(matches) < 3 {
+	if !strings.Contains(location, ":") || !strings.Contains(location, "-") {
 		return nil, fmt.Errorf("%s does not seem like a valid location", location)
 	}
 
-	chr := matches[1]
+	location = strings.TrimSpace(location)
+	location = strings.ReplaceAll(location, ",", "")
 
-	start, err := sys.Atoi(matches[2])
+	location = strings.Replace(location, ":", "-", 1)
+
+	tokens := strings.SplitN(location, "-", 3)
+
+	if len(tokens) < 3 {
+		return nil, fmt.Errorf("%s does not seem like a valid location", location)
+	}
+
+	chr := tokens[0]
+
+	start, err := sys.Atoi(tokens[1])
 
 	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid start", matches[2])
+		return nil, fmt.Errorf("%s does not seem like a valid start", tokens[1])
 	}
 
 	if start < 1 {
 		return nil, fmt.Errorf("start position %d is less than 1", start)
 	}
 
-	end, err := sys.Atoi(matches[3])
+	end, err := sys.Atoi(tokens[2])
 
 	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid end", matches[3])
+		return nil, fmt.Errorf("%s does not seem like a valid end", tokens[2])
 	}
 
 	if end < 1 {
