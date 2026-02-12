@@ -7,8 +7,8 @@ replace github.com/antonybholmes/go-sys => ../go-sys
 replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
-	github.com/antonybholmes/go-basemath v0.0.0-20251222161838-164f0a0354bb
-	github.com/antonybholmes/go-sys v0.0.0-20260105204539-98810971944a
+	github.com/antonybholmes/go-basemath v0.0.0-20260204001030-d512600734fa
+	github.com/antonybholmes/go-sys v0.0.0-20260209231212-cfd21298d6eb
 	github.com/gin-gonic/gin v1.11.0
 )
 
