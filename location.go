@@ -3,7 +3,6 @@ package dna
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -42,7 +41,7 @@ const (
 var (
 	defaultPromoterRegion = NewPromoterRegion(2000, 1000)
 	//chrRegex              = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+)`)
-	locRegex = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+):([0-9,]+)-([0-9,]+)`)
+	//locRegex = regexp.MustCompile(`(?i)(?:chr)?([0-9]+|[a-z_]+):([0-9,]+)-([0-9,]+)`)
 )
 
 func DefaultPromoterRegion() *PromoterRegion {

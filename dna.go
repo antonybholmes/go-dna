@@ -23,30 +23,47 @@ import (
 // 	10: 110,
 // }
 
-const BASE_N byte = 78
+type (
+	AssemblyDB struct {
+		Dir string
+	}
+
+	DnaDB struct {
+		CacheMap map[string]*AssemblyDB
+		Dir      string
+	}
+)
+
+const (
+	BaseN byte = 78
+	// Stop users requesting huge sequences which could cause memory issues, this is a safeguard
+	MaxSize int = 100000
+)
 
 // use an array for speed since
 // we only have 16 values and we
 // know explicitly what each value
 // maps to
-var DNA_4BIT_DECODE_MAP = [16]byte{
-	0,
-	65,
-	67,
-	71,
-	84,
-	97,
-	99,
-	103,
-	116,
-	78,
-	110,
-	0,
-	0,
-	0,
-	0,
-	0,
-}
+var (
+	DNA4BitDecodeMap = [16]byte{
+		0,
+		65,
+		67,
+		71,
+		84,
+		97,
+		99,
+		103,
+		116,
+		78,
+		110,
+		0,
+		0,
+		0,
+		0,
+		0,
+	}
+)
 
 // This is simple complementary lookup
 // map for DNA bases represented as
@@ -116,8 +133,8 @@ func toUpper(b byte) byte {
 		return 71
 	case 84, 116:
 		return 84
-	case BASE_N, 110:
-		return BASE_N
+	case BaseN, 110:
+		return BaseN
 	default:
 		return 0
 	}
@@ -134,7 +151,7 @@ func toLower(b byte) byte {
 		return 103
 	case 84, 116:
 		return 116
-	case BASE_N, 110:
+	case BaseN, 110:
 		return 110
 	default:
 		return 0
@@ -187,7 +204,7 @@ func changeRepeatMask(dna []byte, repeatMask string) {
 	if strings.ToLower(repeatMask) == "n" {
 		for i, b := range dna {
 			if IsLower(b) {
-				dna[i] = BASE_N
+				dna[i] = BaseN
 			}
 		}
 
@@ -214,11 +231,6 @@ func changeCase(dna []byte, format string, repeatMask string) {
 		}
 	}
 
-}
-
-type DnaDB struct {
-	CacheMap map[string]*AssemblyDB
-	Dir      string
 }
 
 func NewDnaDB(dir string) *DnaDB {
@@ -285,15 +297,15 @@ func (ddb *DnaDB) DB(assembly string) (*AssemblyDB, error) {
 	return ddb.CacheMap[assembly], nil
 }
 
-type AssemblyDB struct {
-	Dir string
-}
-
 func NewAssemblyDB(dir string) *AssemblyDB {
 	return &AssemblyDB{dir}
 }
 
 func (adb *AssemblyDB) DNA(location *Location, format string, repeatMask string, rev bool, comp bool) (string, error) {
+	if location.Len() > MaxSize {
+		return "", fmt.Errorf("location length %d exceeds maximum of %d", location.Len(), MaxSize)
+	}
+
 	s := location.Start() - 1
 	e := location.End() - 1
 	l := e - s + 1
@@ -346,7 +358,7 @@ func (adb *AssemblyDB) DNA(location *Location, format string, repeatMask string,
 
 		// mask for lower 4 bits since these
 		// contain the dna base code
-		dna[i] = DNA_4BIT_DECODE_MAP[v&15]
+		dna[i] = DNA4BitDecodeMap[v&15]
 
 		s++
 	}
