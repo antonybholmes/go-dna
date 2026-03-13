@@ -37,7 +37,7 @@ type (
 const (
 	BaseN byte = 78
 	// Stop users requesting huge sequences which could cause memory issues, this is a safeguard
-	MaxSize int = 100000
+	MaxSize int = 200000
 )
 
 // use an array for speed since

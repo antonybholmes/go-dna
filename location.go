@@ -2,6 +2,7 @@ package dna
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -232,7 +233,7 @@ func ParseStartEnd(start int, end int) []int {
 
 func ParseLocation(location string) (*Location, error) {
 	if !strings.Contains(location, ":") || !strings.Contains(location, "-") {
-		return nil, fmt.Errorf("%s does not seem like a valid location", location)
+		return nil, errors.New(location + " does not seem like a valid location")
 	}
 
 	location = strings.TrimSpace(location)
@@ -243,7 +244,7 @@ func ParseLocation(location string) (*Location, error) {
 	tokens := strings.SplitN(location, "-", 3)
 
 	if len(tokens) < 3 {
-		return nil, fmt.Errorf("%s does not seem like a valid location", location)
+		return nil, errors.New(location + " does not seem like a valid location")
 	}
 
 	chr := tokens[0]
@@ -251,7 +252,7 @@ func ParseLocation(location string) (*Location, error) {
 	start, err := sys.Atoi(tokens[1])
 
 	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid start", tokens[1])
+		return nil, errors.New(tokens[1] + " does not seem like a valid start")
 	}
 
 	if start < 1 {
@@ -261,16 +262,20 @@ func ParseLocation(location string) (*Location, error) {
 	end, err := sys.Atoi(tokens[2])
 
 	if err != nil {
-		return nil, fmt.Errorf("%s does not seem like a valid end", tokens[2])
+		return nil, errors.New(tokens[2] + " does not seem like a valid end")
 	}
 
-	if end < 1 {
-		return nil, fmt.Errorf("end position %d is less than 1", end)
-	}
+	// if end < 1 {
+	// 	return nil, fmt.Errorf("end position %d is less than 1", end)
+	// }
 
-	if end < start {
-		return nil, fmt.Errorf("end position %d is less than start position %d", end, start)
-	}
+	// if end < start {
+	// 	return nil, fmt.Errorf("end position %d is less than start position %d", end, start)
+	// }
+
+	// simplify by ensuring start is always the smaller of the two
+	// and end is the larger of the two
+	end = basemath.Max(start, end)
 
 	return NewLocation(chr, start, end)
 }
