@@ -8,7 +8,7 @@ replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
 	github.com/antonybholmes/go-basemath v0.0.0-20260204001030-d512600734fa
-	github.com/antonybholmes/go-sys v0.0.0-20260302215512-25fe845a717e
+	github.com/antonybholmes/go-sys v0.0.0-20260309200013-0638ffae4b9c
 	github.com/gin-gonic/gin v1.11.0
 )
 
@@ -52,9 +52,9 @@ require (
 	github.com/xuri/efp v0.0.1 // indirect
 	github.com/xuri/excelize/v2 v2.10.1 // indirect
 	github.com/xuri/nfp v0.0.2-0.20250530014748-2ddeb826f9a9 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
