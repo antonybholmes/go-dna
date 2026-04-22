@@ -1,14 +1,14 @@
 module github.com/antonybholmes/go-dna
 
-go 1.25.0
+go 1.26
 
 replace github.com/antonybholmes/go-sys => ../go-sys
 
 replace github.com/antonybholmes/go-basemath => ../go-basemath
 
 require (
-	github.com/antonybholmes/go-basemath v0.0.0-20260313220641-74ea9151950a
-	github.com/antonybholmes/go-sys v0.0.0-20260403172913-edaeb305202e
+	github.com/antonybholmes/go-basemath v0.0.0-20260414211833-d03296b3071e
+	github.com/antonybholmes/go-sys v0.0.0-20260414211834-526fb62c6da0
 	github.com/gin-gonic/gin v1.11.0
 )
 
@@ -47,7 +47,7 @@ require (
 	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/richardlehane/mscfb v1.0.6 // indirect
 	github.com/richardlehane/msoleps v1.0.6 // indirect
-	github.com/rs/zerolog v1.35.0 // indirect
+	github.com/rs/zerolog v1.35.1 // indirect
 	github.com/tiendc/go-deepcopy v1.7.2 // indirect
 	github.com/xuri/efp v0.0.1 // indirect
 	github.com/xuri/excelize/v2 v2.10.1 // indirect
