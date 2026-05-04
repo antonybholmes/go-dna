@@ -178,35 +178,6 @@ func ParseChr(location string) (string, error) {
 	// remove any prefix
 	location = strings.TrimPrefix(location, "CHR")
 
-	// should test if remaining is either all digits or a known letter
-	// loop over string to check
-
-	// digitCount := 0
-	// letterCount := 0
-
-	// for _, c := range location {
-	// 	if unicode.IsDigit(c) {
-	// 		digitCount++
-	// 	}
-
-	// 	if unicode.IsLetter(c) {
-	// 		letterCount++
-	// 	}
-	// }
-
-	// // we must either be all letter
-	// if letterCount > 0 && digitCount > 0 {
-	// 	return "", fmt.Errorf("%s does not seem like a valid chr", location)
-	// }
-
-	// matches := chrRegex.FindStringSubmatch(location)
-
-	// if len(matches) < 1 {
-	// 	return "", fmt.Errorf("%s does not seem like a valid chr", location)
-	// }
-
-	// chr := matches[1]
-
 	return "chr" + location, nil
 }
 
