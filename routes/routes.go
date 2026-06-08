@@ -171,6 +171,17 @@ func DNARoute(c *gin.Context) {
 
 	assembly := c.Param("assembly")
 
+	assembly = strings.ToLower(assembly)
+
+	switch assembly {
+	case "grch37":
+		assembly = "hg19"
+	case "grcm38":
+		assembly = "mm10"
+	default:
+		// do nothing, just use the assembly as is
+	}
+
 	query, err := ParseDNAQuery(c)
 
 	if err != nil {
