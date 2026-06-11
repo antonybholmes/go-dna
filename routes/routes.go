@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/antonybholmes/go-basemath"
 	"github.com/antonybholmes/go-dna"
 	"github.com/antonybholmes/go-dna/dnadb"
 	"github.com/antonybholmes/go-web"
@@ -83,7 +84,7 @@ func ParseLocation(c *gin.Context) (*dna.Location, error) {
 	return dna.NewLocation(chr, start, end)
 }
 
-func ParseLocationsFromPost(c *gin.Context) ([]*dna.Location, error) {
+func ParseLocationsFromPost(c *gin.Context, maxLocations int) ([]*dna.Location, error) {
 
 	var locs ReqLocs
 
@@ -91,6 +92,10 @@ func ParseLocationsFromPost(c *gin.Context) ([]*dna.Location, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if maxLocations > -1 {
+		locs.Locations = locs.Locations[0:basemath.Min(len(locs.Locations), maxLocations)]
 	}
 
 	ret, err := dna.ParseLocations(locs.Locations)
@@ -162,7 +167,7 @@ func GenomesRoute(c *gin.Context) {
 }
 
 func DNARoute(c *gin.Context) {
-	locations, err := ParseLocationsFromPost(c)
+	locations, err := ParseLocationsFromPost(c, -1)
 
 	if err != nil {
 		c.Error(err)
