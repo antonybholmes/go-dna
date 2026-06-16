@@ -203,6 +203,10 @@ func ParseStartEnd(start int, end int) []int {
 }
 
 func ParseLocation(location string) (*Location, error) {
+	if location == "" {
+		return nil, errors.New("location(s) cannot be empty")
+	}
+
 	if !strings.Contains(location, ":") || !strings.Contains(location, "-") {
 		return nil, errors.New(location + " does not seem like a valid location")
 	}
