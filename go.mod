@@ -2,7 +2,7 @@ module github.com/antonybholmes/go-dna
 
 go 1.26
 
-// replace github.com/antonybholmes/go-sys => ../go-sys
+replace github.com/antonybholmes/go-sys => ../go-sys
 
  
 require (
