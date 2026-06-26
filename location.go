@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/antonybholmes/go-basemath"
 	"github.com/antonybholmes/go-sys"
+	basemath "github.com/antonybholmes/go-sys/math"
 )
 
 type (

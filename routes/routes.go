@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/antonybholmes/go-basemath"
 	"github.com/antonybholmes/go-dna"
 	"github.com/antonybholmes/go-dna/dnadb"
+	basemath "github.com/antonybholmes/go-sys/math"
 	"github.com/antonybholmes/go-web"
 	"github.com/gin-gonic/gin"
 )
