@@ -19,14 +19,6 @@ func InitDnaDB(dir string) *dna.DnaDB {
 	return instance
 }
 
-func GetInstance() *dna.DnaDB {
+func Instance() *dna.DnaDB {
 	return instance
-}
-
-func Dir() string {
-	return instance.Dir
-}
-
-func Db(assembly string) (*dna.AssemblyDB, error) {
-	return instance.DB(assembly)
 }

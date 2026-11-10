@@ -163,7 +163,7 @@ func ParseDNAQuery(c *gin.Context) (*DNAQuery, error) {
 }
 
 func GenomesRoute(c *gin.Context) {
-	web.MakeDataResp(c, "", dnadb.GetInstance().List())
+	web.MakeDataResp(c, "", dnadb.Instance().List())
 }
 
 func DNARoute(c *gin.Context) {
@@ -194,7 +194,7 @@ func DNARoute(c *gin.Context) {
 		return
 	}
 
-	dnadb, err := dnadb.Db(assembly)
+	dnadb, err := dnadb.Instance().DB(assembly)
 
 	if err != nil {
 		c.Error(err)
