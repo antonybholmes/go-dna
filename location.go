@@ -58,11 +58,11 @@ func NewPromoterRegion(upstream int, downstream int) *PromoterRegion {
 	return &PromoterRegion{basemath.AbsInt(upstream), basemath.AbsInt(downstream)}
 }
 
-func (promoterRegion *PromoterRegion) Upstream() int {
+func (promoterRegion *PromoterRegion) FivePrime() int {
 	return promoterRegion.upstream
 }
 
-func (promoterRegion *PromoterRegion) Downstream() int {
+func (promoterRegion *PromoterRegion) ThreePrime() int {
 	return promoterRegion.downstream
 }
 
@@ -109,6 +109,14 @@ func (location *Location) End() int {
 
 func (location *Location) Strand() string {
 	return location.strand
+}
+
+func (location *Location) Overlaps(other *Location) bool {
+	if location.chr != other.chr {
+		return false
+	}
+
+	return location.start <= other.end && other.start <= location.end
 }
 
 // Returns the string representation of the location in the format "chrX:start-end".
