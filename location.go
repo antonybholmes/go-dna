@@ -10,6 +10,7 @@ import (
 
 	"github.com/antonybholmes/go-sys"
 	basemath "github.com/antonybholmes/go-sys/math"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type (
@@ -25,18 +26,21 @@ type (
 		end    int
 	}
 
-	jsonLocation struct {
-		Chr    string `json:"chr"`
-		Strand string `json:"strand,omitempty"`
-		Start  int    `json:"start"`
-		End    int    `json:"end"`
+	// A location must have a start and end position.
+	// It does not require a chromosome or strand to be specified.
+	Loc struct {
+		Chr    string `json:"chr,omitempty" msgpack:"chr,omitempty"`
+		Strand string `json:"strand,omitempty" msgpack:"strand,omitempty"`
+		Start  int    `json:"start" msgpack:"start"`
+		End    int    `json:"end" msgpack:"end"`
 	}
 )
 
 const (
-	PosStrand      = "+"
-	NegStrand      = "-"
-	StrandNotGiven = "."
+	ForwardStrand = "+"
+	ReverseStrand = "-"
+	NoStrandGiven = "."
+	EmptyStrand   = ""
 )
 
 var (
@@ -67,7 +71,7 @@ func (promoterRegion *PromoterRegion) ThreePrime() int {
 }
 
 func NewLocation(chr string, start int, end int) (*Location, error) {
-	return NewStrandedLocation(chr, start, end, StrandNotGiven)
+	return NewStrandedLocation(chr, start, end, EmptyStrand)
 }
 
 func NewStrandedLocation(chr string, start int, end int, strand string) (*Location, error) {
@@ -147,7 +151,7 @@ func (location *Location) Len() int {
 
 // Create a JSON representation of the coordinate
 func (location *Location) MarshalJSON() ([]byte, error) {
-	return json.Marshal(jsonLocation{
+	return json.Marshal(Loc{
 		Chr:    location.chr,
 		Strand: location.strand,
 		Start:  location.start,
@@ -155,8 +159,20 @@ func (location *Location) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (location *Location) MarshalMsgpack() ([]byte, error) {
+	// Use a temporary struct to avoid infinite recursion
+	raw := Loc{
+		Chr:    location.chr,
+		Strand: location.strand,
+		Start:  location.start,
+		End:    location.end,
+	}
+
+	return msgpack.Marshal(raw)
+}
+
 func (location *Location) UnmarshalJSON(data []byte) error {
-	var jl jsonLocation
+	var jl Loc
 
 	if err := json.Unmarshal(data, &jl); err != nil {
 		return err
@@ -190,8 +206,8 @@ func ParseChr(location string) (string, error) {
 }
 
 func ParseStrand(strand string) string {
-	if strand != "+" && strand != "-" {
-		return "."
+	if strand != ForwardStrand && strand != ReverseStrand && strand != NoStrandGiven {
+		return EmptyStrand
 	}
 
 	return strand
